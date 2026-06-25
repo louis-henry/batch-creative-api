@@ -10,6 +10,14 @@ export function buildImagePrompt(style: StyleSpec): string {
   );
 }
 
+export function buildStylePrompt(): string {
+  return (
+    `Analyze the reference image(s) and describe their shared visual style in one ` +
+    `vivid sentence (mood, lighting, composition, materials). Return JSON: ` +
+    `{ "descriptor": string, "palette": string[] } where palette is up to 6 hex colors.`
+  );
+}
+
 export function buildCopyPrompt(style: StyleSpec): string {
   return (
     `You write punchy social-media ad copy. Given the product image and the visual ` +

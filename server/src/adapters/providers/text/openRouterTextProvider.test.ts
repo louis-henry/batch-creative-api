@@ -97,4 +97,27 @@ describe('openRouterTextProvider', () => {
       .catch((e: unknown) => e);
     expect((error as ProviderError).retryable).toBe(true);
   });
+
+  it('describes the reference style and keeps only string palette entries', async () => {
+    const provider = createOpenRouterTextProvider({
+      apiKey: 'k',
+      fetchFn: respondWith(
+        chatBody(JSON.stringify({ descriptor: 'sunlit linen', palette: ['#fff', 5, '#eee'] })),
+      ),
+    });
+    const analysis = await provider.describeStyle({ refs: [Buffer.from('R')], signal: signal() });
+    expect(analysis.descriptor).toBe('sunlit linen');
+    expect(analysis.palette).toEqual(['#fff', '#eee']);
+  });
+
+  it('treats a style response with no descriptor as retryable', async () => {
+    const provider = createOpenRouterTextProvider({
+      apiKey: 'k',
+      fetchFn: respondWith(chatBody(JSON.stringify({ palette: [] }))),
+    });
+    const error = await provider
+      .describeStyle({ refs: [Buffer.from('R')], signal: signal() })
+      .catch((e: unknown) => e);
+    expect((error as ProviderError).retryable).toBe(true);
+  });
 });
