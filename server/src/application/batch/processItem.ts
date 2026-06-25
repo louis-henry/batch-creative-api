@@ -54,14 +54,20 @@ export async function processItem(
   return { id: input.id, providerUsed: generated.providerUsed, copy, posts };
 }
 
-async function generateImage(
+interface Generated {
+  image: Buffer;
+  providerUsed: string;
+}
+
+function generateImage(
   input: ProductInput,
   style: StyleSpec,
   deps: ProcessItemDeps,
-): Promise<{ image: Buffer; providerUsed: string }> {
-  let providerUsed = 'unknown';
+): Promise<Generated> {
+  // The winning run returns its own provenance, so no shared mutable state can be
+  // overwritten by a timed-out/abandoned provider.
   const providers = deps.imageProviders.map(
-    (provider, index): Provider<Buffer> => ({
+    (provider, index): Provider<Generated> => ({
       name: provider.name,
       run: async (signal) => {
         if (deps.chaos === true && index === 0) {
@@ -74,16 +80,18 @@ async function generateImage(
           signal,
         });
         await gateOnQuality(image, style, deps, signal);
-        providerUsed = provider.name;
-        return image;
+        return { image, providerUsed: provider.name };
       },
     }),
   );
-  const image = await execute(providers, deps.policy);
-  return { image, providerUsed };
+  return execute(providers, deps.policy);
 }
 
-/** Ties failover to quality: a low-scoring image is a retryable failure. */
+/**
+ * Ties failover to quality: a low *score* is a retryable failure. A failed judge
+ * *call* (transient outage) is best-effort and passes the gate, rather than
+ * discarding an otherwise-good image.
+ */
 async function gateOnQuality(
   image: Buffer,
   style: StyleSpec,
@@ -91,7 +99,12 @@ async function gateOnQuality(
   signal: AbortSignal,
 ): Promise<void> {
   if (deps.judgeThreshold === undefined) return;
-  const { score } = await deps.text.judge({ image, style, signal });
+  let score: number;
+  try {
+    ({ score } = await deps.text.judge({ image, style, signal }));
+  } catch {
+    return;
+  }
   if (score < deps.judgeThreshold) {
     throw new ProviderError(`quality ${score.toFixed(2)} below ${deps.judgeThreshold}`, {
       retryable: true,

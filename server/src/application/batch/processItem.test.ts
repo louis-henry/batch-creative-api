@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { formatSpec } from '@app/contracts';
 import { processItem, type ProcessItemDeps } from './processItem.js';
 import { ProviderError } from '../resilience/errors.js';
 import type { RetryPolicy } from '../resilience/policy.js';
@@ -54,6 +55,34 @@ describe('processItem', () => {
     expect(result.posts.map((p) => p.format).sort()).toEqual(['banner', 'square', 'story']);
     expect(result.providerUsed).toBe('gemini');
     expect(result.copy).toEqual({ headline: 'H', subtext: 'S', cta: 'C' });
+
+    const square = result.posts.find((p) => p.format === 'square');
+    expect(square?.url).toBe('https://x/a-square'); // key is `${id}-${format}`
+    expect(square?.width).toBe(formatSpec('square').width);
+    expect(square?.height).toBe(formatSpec('square').height);
+  });
+
+  it('passes the judge gate on the primary provider when the score is high', async () => {
+    const result = await processItem(
+      product('a'),
+      style,
+      deps({ text: text({ judge: () => Promise.resolve({ score: 0.9 }) }), judgeThreshold: 0.5 }),
+    );
+    expect(result.providerUsed).toBe('gemini');
+  });
+
+  it('does not discard a good image when the judge call itself fails', async () => {
+    const result = await processItem(
+      product('a'),
+      style,
+      deps({
+        text: text({
+          judge: () => Promise.reject(new ProviderError('judge down', { retryable: true })),
+        }),
+        judgeThreshold: 0.5,
+      }),
+    );
+    expect(result.providerUsed).toBe('gemini');
   });
 
   it('fails over to the second image provider', async () => {

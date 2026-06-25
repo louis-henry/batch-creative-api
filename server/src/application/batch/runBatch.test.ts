@@ -64,6 +64,38 @@ describe('runBatch', () => {
     expect(job?.failed.map((f) => f.id)).toEqual(['b']);
   });
 
+  it('never runs more items concurrently than the limit', async () => {
+    const jobStore = createInMemoryJobStore();
+    jobStore.create('j');
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const gated: ImageProvider = {
+      name: 'gemini',
+      generate: async () => {
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await new Promise((r) => setTimeout(r, 10));
+        inFlight -= 1;
+        return Buffer.from('IMG');
+      },
+    };
+    const many = Array.from({ length: 5 }, (_, i) => ({
+      id: `p${i}`,
+      product: Buffer.from('OK'),
+      refs: [],
+    }));
+
+    await runBatch(
+      'j',
+      many,
+      [Buffer.from('R')],
+      deps(jobStore, { imageProviders: [gated], concurrency: 2 }),
+    );
+
+    expect(maxInFlight).toBeLessThanOrEqual(2);
+    expect(jobStore.get('j')?.succeeded).toHaveLength(5);
+  });
+
   it('fails every item when the style read fails', async () => {
     const jobStore = createInMemoryJobStore();
     jobStore.create('j');

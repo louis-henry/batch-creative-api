@@ -33,6 +33,18 @@ Scope-appropriate for a take-home, but with production instincts.
   vendor APIs returning JSON envelopes, so this is acceptable; a body-size ceiling
   is the hardening step if untrusted endpoints are ever added.
 
+## Known limits (scope cuts)
+
+Deliberately deferred for this take-home, with the production fix noted:
+
+- **Per-request body** is capped (`bodyLimit`) and uploads are validated for count,
+  MIME, and size before buffering. There is **no global cap on concurrent batches**
+  and **no auth/rate-limit** on the endpoint — production would add a request rate
+  limit, a process-wide in-flight-batch semaphore, and a shared key, plus TTL/size
+  eviction on the job store, to bound memory and provider spend.
+- **`GET /batch/:id`** has no per-caller ownership binding; job ids are unguessable
+  (UUIDv4), so enumeration is impractical, but an auth model would bind job to caller.
+
 ## Output
 
 - Generated images are written to a scoped output directory and served read-only.
