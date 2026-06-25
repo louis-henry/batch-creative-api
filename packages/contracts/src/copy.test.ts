@@ -13,10 +13,17 @@ describe('copySchema', () => {
     expect(copySchema.safeParse({ ...valid, cta: '' }).success).toBe(false);
   });
 
-  it('rejects copy that would overflow the layout', () => {
+  it('accepts copy exactly at the bounds but rejects one over', () => {
+    expect(copySchema.safeParse({ ...valid, headline: 'x'.repeat(60) }).success).toBe(true);
     expect(copySchema.safeParse({ ...valid, headline: 'x'.repeat(61) }).success).toBe(false);
+    expect(copySchema.safeParse({ ...valid, subtext: 'x'.repeat(120) }).success).toBe(true);
     expect(copySchema.safeParse({ ...valid, subtext: 'x'.repeat(121) }).success).toBe(false);
+    expect(copySchema.safeParse({ ...valid, cta: 'x'.repeat(24) }).success).toBe(true);
     expect(copySchema.safeParse({ ...valid, cta: 'x'.repeat(25) }).success).toBe(false);
+  });
+
+  it('accepts single-character headline and cta (min bound)', () => {
+    expect(copySchema.safeParse({ ...valid, headline: 'x', cta: 'y' }).success).toBe(true);
   });
 
   it('allows empty subtext but requires the field', () => {

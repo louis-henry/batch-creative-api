@@ -11,7 +11,7 @@ export type BatchOptions = z.infer<typeof batchOptionsSchema>;
 
 export const postResultSchema = z.object({
   format: formatIdSchema,
-  url: z.string(),
+  url: z.string().min(1),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
 });
@@ -34,11 +34,27 @@ export type ItemFailure = z.infer<typeof itemFailureSchema>;
 export const jobStatusSchema = z.enum(['pending', 'running', 'done']);
 export type JobStatus = z.infer<typeof jobStatusSchema>;
 
-/** Partial-success result: successes and failures reported side by side. */
-export const batchResultSchema = z.object({
-  jobId: z.string(),
-  status: jobStatusSchema,
-  succeeded: z.array(itemResultSchema),
-  failed: z.array(itemFailureSchema),
-});
+/**
+ * Partial-success result: successes and failures reported side by side. A given
+ * item id lands in exactly one bucket — the refine enforces the buckets are
+ * disjoint. (`pending`/`running` may carry partial results: the FE polls while
+ * the batch is still running, so results accrue before `status` is `done`.)
+ */
+export const batchResultSchema = z
+  .object({
+    jobId: z.string(),
+    status: jobStatusSchema,
+    succeeded: z.array(itemResultSchema),
+    failed: z.array(itemFailureSchema),
+  })
+  .superRefine((value, ctx) => {
+    const failedIds = new Set(value.failed.map((f) => f.id));
+    const overlap = value.succeeded.find((s) => failedIds.has(s.id));
+    if (overlap) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `item "${overlap.id}" cannot be both succeeded and failed`,
+      });
+    }
+  });
 export type BatchResult = z.infer<typeof batchResultSchema>;

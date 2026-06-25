@@ -8,7 +8,7 @@ const within = (r: Rect, w: number, h: number, margin: number): boolean =>
 describe('computeCopyLayout', () => {
   it('keeps every copy element inside the safe margin for all formats', () => {
     for (const id of FORMAT_IDS) {
-      const { w, h } = formatSpec(id);
+      const { width: w, height: h } = formatSpec(id);
       const layout = computeCopyLayout(id);
       expect(within(layout.headline, w, h, layout.margin)).toBe(true);
       expect(within(layout.subtext, w, h, layout.margin)).toBe(true);
@@ -16,21 +16,23 @@ describe('computeCopyLayout', () => {
     }
   });
 
-  it('stacks headline above subtext above cta', () => {
+  it('stacks headline, subtext, and cta without overlapping', () => {
     const { headline, subtext, cta } = computeCopyLayout('story');
-    expect(headline.y).toBeLessThan(subtext.y);
-    expect(subtext.y).toBeLessThan(cta.y);
+    expect(headline.y + headline.height).toBeLessThanOrEqual(subtext.y);
+    expect(subtext.y + subtext.height).toBeLessThanOrEqual(cta.y);
   });
 
   it('gives all elements the same content width', () => {
     const { headline, subtext, cta, margin } = computeCopyLayout('square');
-    const expectedWidth = formatSpec('square').w - margin * 2;
+    const expectedWidth = formatSpec('square').width - margin * 2;
     expect(headline.width).toBe(expectedWidth);
     expect(subtext.width).toBe(expectedWidth);
     expect(cta.width).toBe(expectedWidth);
   });
 
-  it('scales the margin with the format, so different shapes differ', () => {
-    expect(computeCopyLayout('square').margin).not.toBe(computeCopyLayout('banner').margin);
+  it('derives the margin as 6% of the shorter side', () => {
+    // square: round(1080 * 0.06) = 65; banner: round(500 * 0.06) = 30
+    expect(computeCopyLayout('square').margin).toBe(65);
+    expect(computeCopyLayout('banner').margin).toBe(30);
   });
 });

@@ -5,14 +5,14 @@ export const FORMAT_IDS = ['square', 'story', 'banner'] as const;
 export type FormatId = (typeof FORMAT_IDS)[number];
 
 export interface FormatSpec {
-  readonly w: number;
-  readonly h: number;
+  readonly width: number;
+  readonly height: number;
 }
 
 export const FORMATS: Record<FormatId, FormatSpec> = {
-  square: { w: 1080, h: 1080 },
-  story: { w: 1080, h: 1920 },
-  banner: { w: 1500, h: 500 },
+  square: { width: 1080, height: 1080 },
+  story: { width: 1080, height: 1920 },
+  banner: { width: 1500, height: 500 },
 };
 
 export const formatIdSchema = z.enum(FORMAT_IDS);

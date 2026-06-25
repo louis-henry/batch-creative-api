@@ -3,9 +3,9 @@
  * every product in a batch, so the whole set looks coherent.
  */
 export interface StyleSpec {
-  descriptor: string;
-  palette: string[];
-  seed: number;
+  readonly descriptor: string;
+  readonly palette: readonly string[];
+  readonly seed: number;
 }
 
 export interface StyleSpecInput {

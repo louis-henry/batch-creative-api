@@ -9,9 +9,25 @@ describe('buildStyleSpec', () => {
     expect(() => buildStyleSpec({ descriptor: '   ' })).toThrow();
   });
 
-  it('clamps the palette to at most five colors', () => {
+  it('clamps the palette to the first five colors', () => {
     const palette = ['#000', '#111', '#222', '#333', '#444', '#555', '#666'];
-    expect(buildStyleSpec({ descriptor: 'x', palette }).palette).toHaveLength(5);
+    expect(buildStyleSpec({ descriptor: 'x', palette }).palette).toEqual([
+      '#000',
+      '#111',
+      '#222',
+      '#333',
+      '#444',
+    ]);
+  });
+
+  it('defaults the palette to empty when omitted', () => {
+    expect(buildStyleSpec({ descriptor: 'x' }).palette).toEqual([]);
+  });
+
+  it('hashes the trimmed descriptor, so padding does not change the seed', () => {
+    expect(buildStyleSpec({ descriptor: '  sunlit  ' }).seed).toBe(
+      buildStyleSpec({ descriptor: 'sunlit' }).seed,
+    );
   });
 
   it('derives a stable seed: same descriptor in, same seed out', () => {
@@ -26,7 +42,9 @@ describe('buildStyleSpec', () => {
     expect(a).not.toBe(b);
   });
 
-  it('keeps an explicitly provided seed', () => {
+  it('keeps an explicitly provided seed, including 0', () => {
     expect(buildStyleSpec({ descriptor: 'x', seed: 42 }).seed).toBe(42);
+    // 0 is falsy: this fails if `??` is ever weakened to `||`.
+    expect(buildStyleSpec({ descriptor: 'x', seed: 0 }).seed).toBe(0);
   });
 });

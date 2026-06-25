@@ -2,18 +2,18 @@ import type { FormatId } from '@app/contracts';
 import { formatSpec } from '@app/contracts';
 
 export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
 }
 
 /** Where each copy element is drawn, in pixels, for a given format. */
 export interface CopyLayout {
-  margin: number;
-  headline: Rect;
-  subtext: Rect;
-  cta: Rect;
+  readonly margin: number;
+  readonly headline: Rect;
+  readonly subtext: Rect;
+  readonly cta: Rect;
 }
 
 const MARGIN_RATIO = 0.06;
@@ -27,7 +27,7 @@ const CTA_RATIO = 0.08;
  * format stays balanced. Pure and deterministic.
  */
 export function computeCopyLayout(format: FormatId): CopyLayout {
-  const { w, h } = formatSpec(format);
+  const { width: w, height: h } = formatSpec(format);
   const margin = Math.round(Math.min(w, h) * MARGIN_RATIO);
   const width = w - margin * 2;
   const gap = Math.round(margin / 2);
