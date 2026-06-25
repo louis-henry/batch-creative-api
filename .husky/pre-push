@@ -1,0 +1,9 @@
+# Block direct pushes to main — it only advances via reviewed PRs.
+while read -r _local _lsha remote _rsha; do
+  if [ "$remote" = "refs/heads/main" ]; then
+    echo "✋ Direct pushes to main are blocked. Open a PR from a feat/* branch."
+    exit 1
+  fi
+done
+
+pnpm typecheck && pnpm test

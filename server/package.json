@@ -1,0 +1,25 @@
+{
+  "name": "@app/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@app/contracts": "workspace:*",
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.6.0",
+    "p-limit": "^6.1.0",
+    "pino": "^9.4.0",
+    "sharp": "^0.33.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
