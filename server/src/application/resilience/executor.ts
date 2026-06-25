@@ -62,22 +62,33 @@ async function runWithRetries<T>(
   throw asError(lastError);
 }
 
+/**
+ * Runs the provider with a deadline. A `timedOut` flag makes the outcome
+ * deterministic: once the timer fires we always surface a `TimeoutError`, even
+ * if the provider rejects synchronously on abort (otherwise its error could win
+ * the race and be misclassified as non-retryable).
+ */
 async function withTimeout<T>(provider: Provider<T>, timeoutMs: number): Promise<T> {
   const controller = new AbortController();
+  let timedOut = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const timeout = new Promise<never>((_, reject) => {
+    return await new Promise<T>((resolve, reject) => {
       timer = setTimeout(() => {
+        timedOut = true;
         controller.abort();
         reject(new TimeoutError(provider.name, timeoutMs));
       }, timeoutMs);
+      provider.run(controller.signal).then(resolve, (error: unknown) => {
+        reject(timedOut ? new TimeoutError(provider.name, timeoutMs) : asError(error));
+      });
     });
-    return await Promise.race([provider.run(controller.signal), timeout]);
   } finally {
     if (timer) clearTimeout(timer);
   }
 }
 
 function asError(value: unknown): Error {
-  return value instanceof Error ? value : new Error(String(value));
+  if (value instanceof Error) return value;
+  return new Error(`non-Error thrown: ${String(value)}`, { cause: value });
 }

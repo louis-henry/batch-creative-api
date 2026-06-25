@@ -13,8 +13,13 @@ export class ProviderError extends Error {
 
 /** A provider attempt exceeded its time budget and was aborted. Always retryable. */
 export class TimeoutError extends Error {
+  readonly providerName: string;
+  readonly timeoutMs: number;
+
   constructor(providerName: string, timeoutMs: number) {
     super(`provider "${providerName}" timed out after ${timeoutMs}ms`);
     this.name = 'TimeoutError';
+    this.providerName = providerName;
+    this.timeoutMs = timeoutMs;
   }
 }
