@@ -31,6 +31,8 @@ export default tseslint.config(
     rules: {
       'max-lines-per-function': 'off',
       'sonarjs/no-duplicate-string': 'off',
+      complexity: 'off',
+      'max-params': 'off',
     },
   },
   prettier,
