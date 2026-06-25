@@ -3,6 +3,8 @@
 ## Branching
 
 - `main` is protected: no direct pushes, PR-only, CI must pass, squash merge.
+  Enforced locally by a `pre-push` hook that blocks direct pushes to `main`;
+  GitHub-side branch protection is enabled once the repo is public.
 - Feature work happens on `feat/<phase-or-topic>` branches cut from `main`.
 - One phase → one branch → one PR.
 
