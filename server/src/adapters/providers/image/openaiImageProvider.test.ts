@@ -5,11 +5,12 @@ import type { ProviderError } from '../../../application/resilience/errors.js';
 import { buildStyleSpec } from '../../../domain/style/styleSpec.js';
 
 const style = buildStyleSpec({ descriptor: 'warm studio' });
-const request = (): ImageRequest => ({
+const request = (overrides: Partial<ImageRequest> = {}): ImageRequest => ({
   product: Buffer.from('PROD'),
   refs: [],
   style,
   signal: new AbortController().signal,
+  ...overrides,
 });
 
 const openaiBody = (imageB64: string): string => JSON.stringify({ data: [{ b64_json: imageB64 }] });
@@ -22,9 +23,13 @@ describe('openaiImageProvider', () => {
       return Promise.resolve(new Response(openaiBody(Buffer.from('IMG').toString('base64'))));
     };
 
-    const out = await createOpenAiImageProvider({ apiKey: 'k', fetchFn }).generate(request());
+    const signal = new AbortController().signal;
+    const out = await createOpenAiImageProvider({ apiKey: 'k', fetchFn }).generate(
+      request({ signal }),
+    );
 
     expect(out).toEqual(Buffer.from('IMG'));
+    expect(captured?.signal).toBe(signal);
     expect((captured?.body as FormData).get('model')).toBe('gpt-image-1');
     expect((captured?.headers as Record<string, string>).Authorization).toBe('Bearer k');
   });

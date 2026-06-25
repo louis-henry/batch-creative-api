@@ -24,19 +24,44 @@ describe('openRouterTextProvider', () => {
       );
     };
 
+    const sig = signal();
     const copy = await createOpenRouterTextProvider({ apiKey: 'k', fetchFn }).copy({
       product: Buffer.from('P'),
       style,
-      signal: signal(),
+      signal: sig,
     });
 
     expect(copy).toEqual({ headline: 'Hi', subtext: 'there', cta: 'Shop' });
+    expect(captured?.signal).toBe(sig);
+    expect((captured?.headers as Record<string, string>).Authorization).toBe('Bearer k');
     const body = JSON.parse(String(captured?.body)) as {
       response_format: { type: string };
       messages: { content: { type: string; image_url?: { url: string } }[] }[];
     };
     expect(body.response_format.type).toBe('json_schema');
     expect(body.messages[0]?.content[1]?.image_url?.url).toContain('data:image/png;base64,');
+  });
+
+  it('treats an empty choices array as retryable (no content)', async () => {
+    const provider = createOpenRouterTextProvider({
+      apiKey: 'k',
+      fetchFn: respondWith(JSON.stringify({ choices: [] })),
+    });
+    const error = await provider
+      .copy({ product: Buffer.from('P'), style, signal: signal() })
+      .catch((e: unknown) => e);
+    expect((error as ProviderError).retryable).toBe(true);
+  });
+
+  it('treats a non-numeric judge score as retryable', async () => {
+    const provider = createOpenRouterTextProvider({
+      apiKey: 'k',
+      fetchFn: respondWith(chatBody(JSON.stringify({ score: 'high' }))),
+    });
+    const error = await provider
+      .judge({ image: Buffer.from('I'), style, signal: signal() })
+      .catch((e: unknown) => e);
+    expect((error as ProviderError).retryable).toBe(true);
   });
 
   it('rejects copy that violates the schema as retryable', async () => {

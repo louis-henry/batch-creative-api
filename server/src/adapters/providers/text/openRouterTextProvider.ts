@@ -15,9 +15,9 @@ const DEFAULT_MODELS = { copy: 'google/gemini-2.5-flash', judge: 'google/gemini-
 const COPY_SCHEMA = {
   type: 'object',
   properties: {
-    headline: { type: 'string' },
-    subtext: { type: 'string' },
-    cta: { type: 'string' },
+    headline: { type: 'string', maxLength: 60 },
+    subtext: { type: 'string', maxLength: 120 },
+    cta: { type: 'string', maxLength: 24 },
   },
   required: ['headline', 'subtext', 'cta'],
   additionalProperties: false,

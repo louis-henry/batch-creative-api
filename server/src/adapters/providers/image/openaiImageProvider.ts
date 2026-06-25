@@ -16,7 +16,8 @@ export function createOpenAiImageProvider(deps: {
   const fetchFn = deps.fetchFn ?? fetch;
   return {
     name: 'openai',
-    // The edits endpoint conditions on the product image; refs inform the prompt only.
+    // The edits endpoint conditions only on the product image; the reference
+    // style is already encoded in StyleSpec and carried via the prompt.
     async generate({ product, style, signal }: ImageRequest): Promise<Buffer> {
       const form = new FormData();
       form.append('model', 'gpt-image-1');

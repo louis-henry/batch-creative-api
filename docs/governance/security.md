@@ -23,6 +23,16 @@ Scope-appropriate for a take-home, but with production instincts.
 - Prefer well-maintained, widely-used packages. Pin via the lockfile.
 - CI runs on every PR; keep the dependency surface small and intentional.
 
+## Provider responses
+
+- Provider error bodies can echo a partial credential (e.g. some APIs include the
+  offending key on a 401). The body is kept only server-side on `error.cause`,
+  scrubbed of key-shaped tokens. Client-facing `ItemFailure.reason` must be derived
+  from `error.message` only — never from `cause` or a full error serialization.
+- Response bodies are read fully into memory. The endpoints are hardcoded, trusted
+  vendor APIs returning JSON envelopes, so this is acceptable; a body-size ceiling
+  is the hardening step if untrusted endpoints are ever added.
+
 ## Output
 
 - Generated images are written to a scoped output directory and served read-only.

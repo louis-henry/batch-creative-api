@@ -30,7 +30,12 @@ export function createGeminiImageProvider(deps: {
           method: 'POST',
           signal,
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': deps.apiKey },
-          body: JSON.stringify({ contents: [{ parts }] }),
+          // responseModalities IMAGE is required so the model returns an image
+          // candidate rather than a text-only one.
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseModalities: ['IMAGE'] },
+          }),
         },
         fetchFn,
       );
