@@ -22,4 +22,14 @@ describe('loadEnv', () => {
       /OPENROUTER_API_KEY/,
     );
   });
+
+  it('rejects an invalid PORT', () => {
+    expect(() => loadEnv({ ...keys, PORT: 'abc' })).toThrow(/PORT/);
+    expect(() => loadEnv({ ...keys, PORT: '-1' })).toThrow(/PORT/);
+    expect(() => loadEnv({ ...keys, PORT: '0' })).toThrow(/PORT/);
+  });
+
+  it('rejects a malformed PUBLIC_BASE_URL', () => {
+    expect(() => loadEnv({ ...keys, PUBLIC_BASE_URL: 'not-a-url' })).toThrow(/PUBLIC_BASE_URL/);
+  });
 });

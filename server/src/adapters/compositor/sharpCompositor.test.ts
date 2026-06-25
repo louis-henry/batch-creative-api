@@ -25,6 +25,27 @@ describe('sharpCompositor', () => {
     }
   });
 
+  it('actually applies the overlay (output differs from a plain resize)', async () => {
+    const base = await solidBase(1200);
+    const plain = await sharp(base).resize(1080, 1080, { fit: 'cover' }).png().toBuffer();
+    const out = await createSharpCompositor().render(base, {
+      headline: 'H',
+      subtext: 'S',
+      cta: 'C',
+    });
+    expect(Buffer.compare(out.square, plain)).not.toBe(0);
+  });
+
+  it('renders valid output when subtext is empty', async () => {
+    const base = await solidBase(600);
+    const out = await createSharpCompositor().render(base, {
+      headline: 'H',
+      subtext: '',
+      cta: 'Go',
+    });
+    expect((await sharp(out.square).metadata()).format).toBe('png');
+  });
+
   it('escapes XML-special characters in copy so the SVG stays valid', async () => {
     const base = await solidBase(600);
     // If escaping failed, sharp would throw parsing the SVG overlay.
