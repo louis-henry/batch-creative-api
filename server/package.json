@@ -12,6 +12,7 @@
   "dependencies": {
     "@app/contracts": "workspace:*",
     "@hono/node-server": "^1.13.0",
+    "dotenv": "^17.4.2",
     "hono": "^4.6.0",
     "p-limit": "^6.1.0",
     "pino": "^9.4.0",
