@@ -20,6 +20,6 @@ export function deriveItems(count: number, job: BatchResult | undefined): ItemVi
   });
 }
 
-export function downloadName(itemId: string, format: string): string {
-  return `${itemId}-${format}.png`;
+export function downloadName(itemId: string): string {
+  return `${itemId}.png`;
 }

@@ -16,7 +16,7 @@ Scope-appropriate for a take-home, but with production instincts.
   application logic. Reject early with a typed `ValidationError`.
 - Validate the **shape and size** of uploaded images (count, byte limit, and a
   best-effort MIME check — the declared `Content-Type` is client-supplied, so it's
-  a hint; sharp/providers reject genuine non-images downstream).
+  a hint; the image providers reject genuine non-images downstream).
 - Outbound provider responses are treated as untrusted: parse/validate before use.
 
 ## Dependencies

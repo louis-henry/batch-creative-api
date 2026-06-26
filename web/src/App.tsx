@@ -1,18 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { MotionConfig } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
-import { Sparkles, RotateCcw, WifiOff } from 'lucide-react';
+import { Stack, WifiSlash, Sparkle, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { useBatchStore } from '@/store/batchStore';
 import { useJob } from '@/hooks/useJob';
 import { createBatch } from '@/lib/api';
 import { deriveItems } from '@/lib/status';
-import { Dropzone } from '@/components/Dropzone';
-import { Thumbs } from '@/components/Thumbs';
-import { Controls } from '@/components/Controls';
-import { ProgressList } from '@/components/ProgressList';
-import { ResultGrid } from '@/components/ResultGrid';
-import { Card } from '@/components/ui/card';
+import { loadSample, SAMPLE_PRODUCTS, SAMPLE_REFS } from '@/lib/samples';
+import { ImagePicker } from '@/components/ImagePicker';
+import { Gallery } from '@/components/Gallery';
+import { LoadingView } from '@/components/LoadingView';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+
+const MAX_REFS = 2;
+const nameOf = (url: string): string => url.split('/').pop()?.split('?')[0] ?? '';
+
+function Section({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-border bg-surface/50 p-5">
+      <h2 className="font-display text-base font-semibold tracking-tight">{title}</h2>
+      <p className="mt-0.5 text-sm text-muted">{subtitle}</p>
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+function ConnectionError() {
+  return (
+    <div
+      role="alert"
+      className="mt-6 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger"
+    >
+      <WifiSlash size={18} weight="bold" />
+      Lost connection to the job — retrying. Check the API is running.
+    </div>
+  );
+}
 
 export function App() {
   const s = useBatchStore();
@@ -21,16 +55,14 @@ export function App() {
 
   const finished = job?.status === 'done';
   const running = (s.jobId !== null && !finished && !isError) || submitting;
-  // Once submitted, derive against the snapshot count so editing the queue
-  // mid-run can't invent phantom pending items.
-  const items = deriveItems(s.jobId ? s.submittedCount : s.products.length, job);
-  const results = items.flatMap((i) => (i.status === 'done' ? [i.result] : []));
-  const failures = items.flatMap((i) => (i.status === 'failed' ? [i] : []));
+  const items = s.jobId ? deriveItems(s.submittedCount, job) : [];
+  const results = items.filter((i) => i.status === 'done').length;
+  const failures = items.filter((i) => i.status === 'failed').length;
   const canRun = s.products.length > 0 && s.refs.length >= 1;
 
-  const failedSuffix = failures.length > 0 ? `, ${String(failures.length)} failed` : '';
+  const failedSuffix = failures > 0 ? `, ${String(failures)} failed` : '';
   const summary = s.jobId
-    ? `${String(results.length)} of ${String(s.products.length)} posts ready${failedSuffix}`
+    ? `${String(results)} of ${String(s.submittedCount)} posts ready${failedSuffix}`
     : '';
 
   useEffect(() => {
@@ -54,98 +86,173 @@ export function App() {
       });
   };
 
+  const toggle = (
+    url: string,
+    files: File[],
+    add: (f: File[]) => void,
+    remove: (i: number) => void,
+  ): void => {
+    const index = files.findIndex((f) => f.name === nameOf(url));
+    if (index >= 0) {
+      remove(index);
+      return;
+    }
+    loadSample(url)
+      .then((f) => {
+        add([f]);
+      })
+      .catch(() => undefined);
+  };
+
+  let phase: 'idle' | 'running' | 'done' = 'idle';
+  if (running) phase = 'running';
+  else if (finished) phase = 'done';
+
   return (
     <MotionConfig reducedMotion="user">
-      <div className="mx-auto max-w-6xl px-5 py-10">
-        <header className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-            <Sparkles aria-hidden="true" className="h-5 w-5" />
+      <div className="relative min-h-full">
+        {phase === 'idle' && (
+          <div className="glow pointer-events-none absolute inset-x-0 top-0 h-72" />
+        )}
+
+        <header className="relative flex items-center justify-between px-5 py-5 sm:px-8">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Stack size={16} weight="fill" />
+            </span>
+            <span className="font-display text-sm font-semibold tracking-tight">
+              AI Engineering Challenge
+            </span>
           </div>
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Batch Creative Studio</h1>
-            <p className="text-sm text-muted">
-              Product images in, styled social posts out — with provider failover and consistent
-              style.
-            </p>
-          </div>
+          <ThemeToggle />
         </header>
 
-        <p className="sr-only" role="status" aria-live="polite">
+        <p className="sr-only" role="status">
           {summary}
         </p>
 
-        <main className="grid gap-6 lg:grid-cols-[380px_1fr]">
-          <Card className="h-fit space-y-5 p-5">
-            <div>
-              <Dropzone
-                label="Product images"
-                hint="Click to choose, or drag images here — one post per image"
-                onFiles={s.addProducts}
-              />
-              <Thumbs files={s.products} onRemove={s.removeProduct} />
+        {phase === 'idle' && (
+          <main className="relative mx-auto max-w-2xl px-5 pb-16">
+            <div className="py-8 text-center sm:py-10">
+              <h1 className="font-display text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl">
+                Your product, <span className="text-primary">styled into a set.</span>
+              </h1>
+              <p className="mx-auto mt-3 max-w-md text-muted">
+                Pick or upload a product and a reference mood — get a ready-to-post image with a
+                title, caption, and hashtags, with provider failover and a consistent look.
+              </p>
             </div>
-            <div>
-              <Dropzone
-                label="Reference images"
-                hint="1–2 images that define the mood"
-                onFiles={s.addRefs}
-              />
-              <Thumbs files={s.refs} onRemove={s.removeRef} />
-            </div>
-            <div className="h-px bg-border" />
-            <Controls
-              concurrency={s.concurrency}
-              chaos={s.chaos}
-              running={running}
-              canRun={canRun}
-              onConcurrency={s.setConcurrency}
-              onChaos={s.setChaos}
-              onRun={run}
-            />
-            {finished && (
-              <Button variant="outline" className="w-full" onClick={s.reset}>
-                <RotateCcw aria-hidden="true" className="h-4 w-4" /> New batch
-              </Button>
-            )}
-          </Card>
 
-          <div className="space-y-6">
-            <h2 className="sr-only">Generated posts</h2>
-            {!s.jobId && (
-              <Card className="flex min-h-64 flex-col items-center justify-center gap-2 p-10 text-center">
-                <Sparkles aria-hidden="true" className="h-6 w-6 text-muted" />
-                <p className="text-sm text-muted">
-                  Upload product and reference images, then generate to see posts appear here.
-                </p>
-              </Card>
-            )}
+            <div className="space-y-4">
+              <Section title="Products" subtitle="One styled post is generated per product image.">
+                <ImagePicker
+                  samples={SAMPLE_PRODUCTS}
+                  files={s.products}
+                  max={20}
+                  uploadLabel="Upload product images"
+                  onToggleSample={(url) => toggle(url, s.products, s.addProducts, s.removeProduct)}
+                  onUpload={s.addProducts}
+                  onRemoveFile={s.removeProduct}
+                />
+              </Section>
 
-            {isError && (
-              <Card role="alert" className="flex items-center gap-2 p-4 text-sm text-danger">
-                <WifiOff aria-hidden="true" className="h-4 w-4" />
-                Lost connection to the job. Check the API is running.
-              </Card>
-            )}
+              <Section
+                title="References"
+                subtitle="1–2 images that set the mood, colour, and style."
+              >
+                <ImagePicker
+                  samples={SAMPLE_REFS}
+                  files={s.refs}
+                  max={MAX_REFS}
+                  uploadLabel="Upload reference images"
+                  onToggleSample={(url) => toggle(url, s.refs, s.addRefs, s.removeRef)}
+                  onUpload={s.addRefs}
+                  onRemoveFile={s.removeRef}
+                />
+              </Section>
 
-            {items.length > 0 && running && <ProgressList items={items} />}
-
-            <ResultGrid results={results} />
-
-            {failures.length > 0 && (
-              <Card className="space-y-2 p-4">
-                <h2 className="text-sm font-medium text-danger">Failed items</h2>
-                {failures.map((f) => (
-                  <div key={f.id} className="flex justify-between gap-3 text-xs text-muted">
-                    <span className="font-mono">{f.id}</span>
-                    <span className="text-right">{f.failure.reason}</span>
+              <Section title="Settings" subtitle="Tune how the batch runs.">
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium">Concurrency</p>
+                      <p className="text-xs text-muted">
+                        How many products generate in parallel — speed, not quantity.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Slider
+                        className="w-32"
+                        min={1}
+                        max={16}
+                        step={1}
+                        value={[s.concurrency]}
+                        onValueChange={([v]) => {
+                          s.setConcurrency(v ?? 1);
+                        }}
+                        aria-label="Concurrency"
+                      />
+                      <span className="w-5 font-mono text-sm tabular-nums">{s.concurrency}</span>
+                    </div>
                   </div>
-                ))}
-              </Card>
-            )}
-          </div>
-        </main>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium">Chaos mode</p>
+                      <p className="text-xs text-muted">
+                        Force the primary provider to fail, to demo failover.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={s.chaos}
+                      onCheckedChange={s.setChaos}
+                      aria-label="Chaos mode"
+                    />
+                  </div>
+                </div>
+              </Section>
+            </div>
 
-        <Toaster theme="dark" position="top-right" richColors />
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <Button size="lg" className="w-full" onClick={run} disabled={!canRun}>
+                <Sparkle size={17} weight="fill" />
+                Generate posts
+              </Button>
+              {!canRun && (
+                <p className="text-xs text-muted">
+                  Add at least one product and one reference to generate.
+                </p>
+              )}
+            </div>
+          </main>
+        )}
+
+        {phase === 'running' && (
+          <main className="relative mx-auto max-w-6xl px-5 pb-24">
+            <LoadingView done={results} total={s.submittedCount} />
+            {isError && <ConnectionError />}
+            <Gallery items={items} />
+          </main>
+        )}
+
+        {phase === 'done' && (
+          <main className="relative mx-auto max-w-6xl px-5 pb-24">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl font-semibold tracking-tight">Your post set</h2>
+                <p className="text-sm text-muted">
+                  {results} ready{failures > 0 ? `, ${String(failures)} failed` : ''} · save any
+                  post.
+                </p>
+              </div>
+              <Button variant="outline" onClick={s.reset}>
+                <ArrowCounterClockwise size={16} weight="bold" /> New batch
+              </Button>
+            </div>
+            <Gallery items={items} />
+          </main>
+        )}
+
+        <Toaster theme="system" position="top-right" richColors />
       </div>
     </MotionConfig>
   );

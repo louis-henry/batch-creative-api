@@ -2,12 +2,11 @@ import { describe, it, expect } from 'vitest';
 import type { BatchResult } from '@app/contracts';
 import { deriveItems, downloadName } from './status.js';
 
-const post = { format: 'square' as const, url: '/o/a.png', width: 1080, height: 1080 };
 const result = (id: string) => ({
   id,
   providerUsed: 'gemini',
-  copy: { headline: 'H', subtext: '', cta: 'C' },
-  posts: [post],
+  imageUrl: `/o/${id}.png`,
+  post: { title: 'T', caption: 'C', hashtags: ['#x'] },
 });
 
 const job: BatchResult = {
@@ -29,7 +28,7 @@ describe('deriveItems', () => {
 });
 
 describe('downloadName', () => {
-  it('builds a per-format file name', () => {
-    expect(downloadName('item-1', 'story')).toBe('item-1-story.png');
+  it('builds a file name from the item id', () => {
+    expect(downloadName('item-1')).toBe('item-1.png');
   });
 });

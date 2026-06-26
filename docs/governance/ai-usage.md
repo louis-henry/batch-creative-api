@@ -29,8 +29,8 @@ Principle: AI accelerates the work, but every change passes the same gates
 
 - **Image generation** — product placed in-context using editing-capable models
   (Gemini 2.5 Flash Image primary, OpenAI `gpt-image-1` failover) behind one port.
-- **Copy generation** — an LLM via OpenRouter produces structured copy
-  (headline/subtext/CTA) validated against a Zod schema.
+- **Post copywriting** — an LLM via OpenRouter produces a structured social post
+  (title, caption, hashtags) validated against a Zod schema.
 - **Consistency** — a style spec is extracted once from the reference images and
   applied across the batch.
 - **Optional LLM-as-judge** — scores each output for product fidelity and style

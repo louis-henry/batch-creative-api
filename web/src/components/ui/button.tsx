@@ -4,18 +4,23 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40',
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98]',
-        outline: 'border border-border bg-surface/50 hover:bg-surface-2',
+        primary:
+          'bg-primary text-primary-foreground shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset] hover:brightness-105 active:scale-[0.98]',
+        outline: 'border border-border bg-surface/60 hover:bg-surface-2 hover:border-foreground/20',
         ghost: 'text-muted hover:bg-surface-2 hover:text-foreground',
       },
-      size: { default: 'h-10 px-4', sm: 'h-8 px-3 text-xs', icon: 'h-9 w-9' },
+      size: {
+        sm: 'h-8 px-3 text-xs',
+        md: 'h-10 px-4 text-sm',
+        lg: 'h-12 px-6 text-[0.95rem]',
+        icon: 'h-9 w-9',
+      },
     },
-    defaultVariants: { variant: 'default', size: 'default' },
+    defaultVariants: { variant: 'primary', size: 'md' },
   },
 );
 

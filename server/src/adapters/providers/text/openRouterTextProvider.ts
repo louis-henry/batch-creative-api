@@ -1,6 +1,6 @@
-import { type Copy, copySchema } from '@app/contracts';
+import { type SocialPost, socialPostSchema } from '@app/contracts';
 import type {
-  CopyRequest,
+  WritePostRequest,
   DescribeRequest,
   JudgeRequest,
   JudgeResult,
@@ -9,11 +9,11 @@ import type {
 } from '../../../application/ports/textProvider.js';
 import { ProviderError } from '../../../application/resilience/errors.js';
 import { dataUrl, ensureOk, fetchText, parseJson, type FetchFn } from '../providerHttp.js';
-import { buildCopyPrompt, buildJudgePrompt, buildStylePrompt } from '../prompts.js';
+import { buildPostPrompt, buildJudgePrompt, buildStylePrompt } from '../prompts.js';
 
 const ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 const DEFAULT_MODEL = 'google/gemini-2.5-flash';
-const DEFAULT_MODELS = { describe: DEFAULT_MODEL, copy: DEFAULT_MODEL, judge: DEFAULT_MODEL };
+const DEFAULT_MODELS = { describe: DEFAULT_MODEL, post: DEFAULT_MODEL, judge: DEFAULT_MODEL };
 
 const STYLE_SCHEMA = {
   type: 'object',
@@ -24,14 +24,14 @@ const STYLE_SCHEMA = {
   required: ['descriptor', 'palette'],
   additionalProperties: false,
 };
-const COPY_SCHEMA = {
+const POST_SCHEMA = {
   type: 'object',
   properties: {
-    headline: { type: 'string', maxLength: 60 },
-    subtext: { type: 'string', maxLength: 120 },
-    cta: { type: 'string', maxLength: 24 },
+    title: { type: 'string', maxLength: 80 },
+    caption: { type: 'string', maxLength: 400 },
+    hashtags: { type: 'array', items: { type: 'string' }, maxItems: 10 },
   },
-  required: ['headline', 'subtext', 'cta'],
+  required: ['title', 'caption', 'hashtags'],
   additionalProperties: false,
 };
 const JUDGE_SCHEMA = {
@@ -76,7 +76,7 @@ async function chat(
 export function createOpenRouterTextProvider(deps: {
   apiKey: string;
   fetchFn?: FetchFn;
-  models?: { describe: string; copy: string; judge: string };
+  models?: { describe: string; post: string; judge: string };
 }): TextProvider {
   const client: ChatClient = { fetchFn: deps.fetchFn ?? fetch, apiKey: deps.apiKey };
   const models = deps.models ?? DEFAULT_MODELS;
@@ -93,15 +93,15 @@ export function createOpenRouterTextProvider(deps: {
       });
       return parseStyle(await chat(client, 'openrouter style', body, signal));
     },
-    async copy({ product, style, signal }: CopyRequest): Promise<Copy> {
+    async writePost({ product, style, signal }: WritePostRequest): Promise<SocialPost> {
       const body = message({
-        model: models.copy,
-        text: buildCopyPrompt(style),
+        model: models.post,
+        text: buildPostPrompt(style),
         images: [product],
-        schemaName: 'copy',
-        schema: COPY_SCHEMA,
+        schemaName: 'post',
+        schema: POST_SCHEMA,
       });
-      return parseCopy(await chat(client, 'openrouter copy', body, signal));
+      return parsePost(await chat(client, 'openrouter post', body, signal));
     },
     async judge({ image, style, signal }: JudgeRequest): Promise<JudgeResult> {
       const body = message({
@@ -162,10 +162,12 @@ function parseStyle(content: string): StyleAnalysis {
   return { descriptor: body.descriptor, palette };
 }
 
-function parseCopy(content: string): Copy {
-  const result = copySchema.safeParse(parseJson<unknown>('openrouter copy', stripFences(content)));
+function parsePost(content: string): SocialPost {
+  const result = socialPostSchema.safeParse(
+    parseJson<unknown>('openrouter post', stripFences(content)),
+  );
   if (!result.success) {
-    throw new ProviderError('openrouter copy did not match the schema', { retryable: true });
+    throw new ProviderError('openrouter post did not match the schema', { retryable: true });
   }
   return result.data;
 }

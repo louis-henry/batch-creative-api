@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { formatSpec } from '@app/contracts';
 import { processItem, type ProcessItemDeps } from './processItem.js';
 import { ProviderError } from '../resilience/errors.js';
 import type { RetryPolicy } from '../resilience/policy.js';
 import type { ImageProvider } from '../ports/imageProvider.js';
 import type { TextProvider } from '../ports/textProvider.js';
-import type { Compositor } from '../ports/compositor.js';
 import type { ImageStore } from '../ports/imageStore.js';
 import { buildStyleSpec } from '../../domain/style/styleSpec.js';
 
@@ -25,41 +23,27 @@ const image = (name: string, generate: ImageProvider['generate']): ImageProvider
 const text = (over: Partial<TextProvider> = {}): TextProvider => ({
   name: 'openrouter',
   describeStyle: () => Promise.resolve({ descriptor: 'd', palette: [] }),
-  copy: () => Promise.resolve({ headline: 'H', subtext: 'S', cta: 'C' }),
+  writePost: () => Promise.resolve({ title: 'T', caption: 'C', hashtags: ['#x'] }),
   judge: () => Promise.resolve({ score: 1 }),
   ...over,
 });
 
-const compositor: Compositor = {
-  render: () =>
-    Promise.resolve({
-      square: Buffer.from('sq'),
-      story: Buffer.from('st'),
-      banner: Buffer.from('bn'),
-    }),
-};
 const store: ImageStore = { save: (key) => Promise.resolve({ key, url: `https://x/${key}` }) };
 
 const deps = (over: Partial<ProcessItemDeps> = {}): ProcessItemDeps => ({
   imageProviders: [image('gemini', () => Promise.resolve(Buffer.from('IMG')))],
   text: text(),
-  compositor,
   store,
   policy,
   ...over,
 });
 
 describe('processItem', () => {
-  it('produces the three posts, the copy, and the winning provider', async () => {
+  it('produces the stored image url, the post, and the winning provider', async () => {
     const result = await processItem(product('a'), style, deps());
-    expect(result.posts.map((p) => p.format).sort()).toEqual(['banner', 'square', 'story']);
     expect(result.providerUsed).toBe('gemini');
-    expect(result.copy).toEqual({ headline: 'H', subtext: 'S', cta: 'C' });
-
-    const square = result.posts.find((p) => p.format === 'square');
-    expect(square?.url).toBe('https://x/a-square'); // key is `${id}-${format}`
-    expect(square?.width).toBe(formatSpec('square').width);
-    expect(square?.height).toBe(formatSpec('square').height);
+    expect(result.imageUrl).toBe('https://x/a'); // store key is the item id
+    expect(result.post).toEqual({ title: 'T', caption: 'C', hashtags: ['#x'] });
   });
 
   it('passes the judge gate on the primary provider when the score is high', async () => {

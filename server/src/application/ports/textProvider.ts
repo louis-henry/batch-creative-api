@@ -1,4 +1,4 @@
-import type { Copy } from '@app/contracts';
+import type { SocialPost } from '@app/contracts';
 import type { StyleSpec } from '../../domain/style/styleSpec.js';
 
 export interface DescribeRequest {
@@ -12,7 +12,7 @@ export interface StyleAnalysis {
   readonly palette: string[];
 }
 
-export interface CopyRequest {
+export interface WritePostRequest {
   readonly product: Buffer;
   readonly style: StyleSpec;
   readonly signal: AbortSignal;
@@ -29,10 +29,10 @@ export interface JudgeResult {
   readonly score: number;
 }
 
-/** LLM-backed text/vision tasks: style read, ad copy, and quality judging. */
+/** LLM-backed text/vision tasks: style read, post copywriting, and quality judging. */
 export interface TextProvider {
   readonly name: string;
   describeStyle(request: DescribeRequest): Promise<StyleAnalysis>;
-  copy(request: CopyRequest): Promise<Copy>;
+  writePost(request: WritePostRequest): Promise<SocialPost>;
   judge(request: JudgeRequest): Promise<JudgeResult>;
 }

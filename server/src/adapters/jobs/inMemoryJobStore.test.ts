@@ -5,8 +5,8 @@ import { createInMemoryJobStore } from './inMemoryJobStore.js';
 const item = (id: string): ItemResult => ({
   id,
   providerUsed: 'gemini',
-  copy: { headline: 'h', subtext: '', cta: 'c' },
-  posts: [],
+  imageUrl: `https://x/${id}`,
+  post: { title: 'T', caption: 'C', hashtags: ['#x'] },
 });
 
 describe('inMemoryJobStore', () => {

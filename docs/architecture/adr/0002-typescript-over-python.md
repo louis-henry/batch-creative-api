@@ -23,4 +23,5 @@ Build in **TypeScript** end to end.
 - Node's async model fits the I/O-bound fan-out (N images × providers) well.
 - One language across API, shared contracts, and the web demo reduces friction and
   enables a shared Zod schema package.
-- Image compositing uses `sharp` (libvips), which is fast and ergonomic in Node.
+- Image work is hosted-provider HTTP calls, not local pixel processing, so no
+  native imaging stack (e.g. Python's Pillow or Node's `sharp`) is needed.

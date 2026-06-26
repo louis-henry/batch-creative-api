@@ -4,7 +4,6 @@ import { runBatch } from '../../application/batch/runBatch.js';
 import { createInMemoryJobStore } from '../../adapters/jobs/inMemoryJobStore.js';
 import type { ImageProvider } from '../../application/ports/imageProvider.js';
 import type { TextProvider } from '../../application/ports/textProvider.js';
-import type { Compositor } from '../../application/ports/compositor.js';
 import type { ImageStore } from '../../application/ports/imageStore.js';
 
 const image: ImageProvider = {
@@ -14,23 +13,15 @@ const image: ImageProvider = {
 const text: TextProvider = {
   name: 'openrouter',
   describeStyle: () => Promise.resolve({ descriptor: 'd', palette: [] }),
-  copy: () => Promise.resolve({ headline: 'H', subtext: '', cta: 'C' }),
+  writePost: () => Promise.resolve({ title: 'T', caption: 'C', hashtags: ['#x'] }),
   judge: () => Promise.resolve({ score: 1 }),
-};
-const compositor: Compositor = {
-  render: () =>
-    Promise.resolve({
-      square: Buffer.from('s'),
-      story: Buffer.from('t'),
-      banner: Buffer.from('b'),
-    }),
 };
 const store: ImageStore = { save: (key) => Promise.resolve({ key, url: `https://x/${key}` }) };
 const png = (name: string): File => new File([new Uint8Array(3)], name, { type: 'image/png' });
 
 interface JobSnapshot {
   status: string;
-  succeeded: { id: string; posts: unknown[] }[];
+  succeeded: { id: string; imageUrl: string }[];
   failed: { id: string }[];
 }
 
@@ -43,7 +34,6 @@ describe('batch flow: HTTP request → runBatch → polled result', () => {
         runBatch(jobId, products, refs, {
           imageProviders: [image],
           text,
-          compositor,
           store,
           jobStore,
           policy: { maxRetries: 0, baseMs: 1, maxMs: 5, attemptTimeoutMs: 100 },
@@ -70,7 +60,7 @@ describe('batch flow: HTTP request → runBatch → polled result', () => {
 
     expect(job?.status).toBe('done');
     expect(job?.succeeded.map((s) => s.id).sort()).toEqual(['item-0', 'item-1']);
-    expect(job?.succeeded[0]?.posts).toHaveLength(3);
+    expect(job?.succeeded[0]?.imageUrl).toContain('https://x/');
     expect(job?.failed).toHaveLength(0);
   });
 });

@@ -15,19 +15,18 @@ describe('batchOptionsSchema', () => {
 });
 
 describe('batchResultSchema', () => {
-  const post = { format: 'square' as const, url: '/o/a.png', width: 1080, height: 1080 };
-  const succeeded = {
+  const item = {
     id: 'a',
-    providerUsed: 'gemini',
-    copy: { headline: 'Hi', subtext: '', cta: 'Shop' },
-    posts: [post],
+    providerUsed: 'openai',
+    imageUrl: '/o/a.png',
+    post: { title: 'Hi', caption: 'There.', hashtags: ['#a'] },
   };
 
   it('accepts a partial-success result with both buckets populated', () => {
     const result = {
       jobId: 'job-1',
       status: 'running' as const,
-      succeeded: [succeeded],
+      succeeded: [item],
       failed: [{ id: 'b', reason: 'provider exhausted' }],
     };
     expect(batchResultSchema.safeParse(result).success).toBe(true);
@@ -37,7 +36,7 @@ describe('batchResultSchema', () => {
     const result = {
       jobId: 'job-1',
       status: 'done' as const,
-      succeeded: [succeeded],
+      succeeded: [item],
       failed: [{ id: 'a', reason: 'should not also be here' }],
     };
     expect(batchResultSchema.safeParse(result).success).toBe(false);

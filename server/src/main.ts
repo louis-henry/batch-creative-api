@@ -6,11 +6,11 @@ import pino from 'pino';
 import { loadEnv } from './config/env.js';
 import { createInMemoryJobStore } from './adapters/jobs/inMemoryJobStore.js';
 import { createLocalImageStore } from './adapters/storage/localImageStore.js';
-import { createSharpCompositor } from './adapters/compositor/sharpCompositor.js';
 import { createGeminiImageProvider } from './adapters/providers/image/geminiImageProvider.js';
 import { createOpenAiImageProvider } from './adapters/providers/image/openaiImageProvider.js';
 import { createOpenRouterTextProvider } from './adapters/providers/text/openRouterTextProvider.js';
 import { runBatch } from './application/batch/runBatch.js';
+import type { ImageProvider } from './application/ports/imageProvider.js';
 import type { RetryPolicy } from './application/resilience/policy.js';
 import { createApp, type StartBatch } from './interface/http/app.js';
 
@@ -27,11 +27,14 @@ const logger = pino({
 
 const jobStore = createInMemoryJobStore();
 const text = createOpenRouterTextProvider({ apiKey: env.OPENROUTER_API_KEY });
-const imageProviders = [
-  createGeminiImageProvider({ apiKey: env.GEMINI_API_KEY }),
-  createOpenAiImageProvider({ apiKey: env.OPENAI_API_KEY }),
-];
-const compositor = createSharpCompositor();
+
+// Use whichever image providers have keys; Gemini first, OpenAI as failover.
+const imageProviders: ImageProvider[] = [];
+if (env.GEMINI_API_KEY)
+  imageProviders.push(createGeminiImageProvider({ apiKey: env.GEMINI_API_KEY }));
+if (env.OPENAI_API_KEY)
+  imageProviders.push(createOpenAiImageProvider({ apiKey: env.OPENAI_API_KEY }));
+logger.info(`image providers: ${imageProviders.map((p) => p.name).join(', ')}`);
 const store = createLocalImageStore({
   directory: OUTPUT_DIR,
   publicBaseUrl: `${env.PUBLIC_BASE_URL}/images`,
@@ -42,7 +45,6 @@ const startBatch: StartBatch = (jobId, products, refs, options) => {
   runBatch(jobId, products, refs, {
     imageProviders,
     text,
-    compositor,
     store,
     jobStore,
     logger,
