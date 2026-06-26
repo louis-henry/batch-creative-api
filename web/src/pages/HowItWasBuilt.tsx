@@ -43,7 +43,7 @@ function useActiveSection(ids: readonly string[]): string {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setActive(visible[0].target.id);
       },
-      { rootMargin: '-25% 0px -65% 0px' },
+      { rootMargin: '-25% 0px -45% 0px' },
     );
     for (const id of ids) {
       const el = document.getElementById(id);
@@ -66,6 +66,7 @@ function SideNav() {
           <li key={s.id}>
             <a
               href={`#${s.id}`}
+              aria-current={active === s.id ? 'true' : undefined}
               className={cn(
                 '-ml-px block border-l-2 py-1 pl-3 text-sm transition',
                 active === s.id
@@ -84,7 +85,7 @@ function SideNav() {
 
 function SectionHeading({ id, kicker, title }: { id: string; kicker: string; title: string }) {
   return (
-    <div className="mb-5 scroll-mt-24" id={id}>
+    <div className="mb-5 scroll-mt-24 outline-none" id={id} tabIndex={-1}>
       <p className="font-mono text-[11px] uppercase tracking-wider text-accent-strong">{kicker}</p>
       <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">{title}</h2>
     </div>
@@ -114,7 +115,7 @@ function GroupCard({ icon, title, rows }: { icon: ReactNode; title: string; rows
   );
 }
 
-const PRINCIPLES: string[][] = [
+const PRINCIPLES: [string, string][] = [
   [
     'Design before code',
     'Every feature started as a short written spec and a plan, then code. Not a one-shot prompt.',
@@ -171,7 +172,7 @@ const PHASES = [
   },
 ];
 
-const PANEL = [
+const PANEL: [string, string][] = [
   ['Correctness', 'Logic, edge cases, and regressions against the plan.'],
   ['Types and architecture', 'Boundaries, the ports and adapters rule, and type design.'],
   ['Security', 'Input validation, secret handling, and the failure-reason invariant.'],
@@ -180,7 +181,7 @@ const PANEL = [
   ['Performance and DX', 'Hot paths, bundle weight, and how the code reads.'],
 ];
 
-const CATCHES = [
+const CATCHES: [string, string][] = [
   [
     'A timeout classification race',
     'It could mark a timed-out attempt as non-retryable and quietly skip failover.',
@@ -207,7 +208,7 @@ const CATCHES = [
   ],
 ];
 
-const SKILLS: string[][] = [
+const SKILLS: [string, string][] = [
   [
     'review-panel',
     'Spin up a panel of specialist reviewer agents over a diff or PR. This repo ships the skill under .claude/skills.',
@@ -218,19 +219,19 @@ const SKILLS: string[][] = [
   ['debugging', 'A disciplined loop for tracking a bug to its root cause.'],
 ];
 
-const COMMANDS: string[][] = [
+const COMMANDS: [string, string][] = [
   ['/code-review', 'Kick off a cloud review panel over the branch or a PR.'],
   ['project commands', 'Repeatable tasks wired up under .claude for this repo.'],
 ];
 
-const MCPS: string[][] = [
+const MCPS: [string, string][] = [
   ['context7', 'Current provider and library docs, instead of stale memory.'],
   ['playwright', 'Drive a real browser for QA and screenshots.'],
   ['serena', 'Move around the code by symbol rather than grep.'],
   ['basic-memory', 'Persist decisions and context across sessions.'],
 ];
 
-const PLUGINS: string[][] = [
+const PLUGINS: [string, string][] = [
   ['superpowers', 'The skills, brainstorming, and planning harness.'],
   ['pr-review-toolkit', 'The specialist reviewer agents used on each PR.'],
   ['feature-dev', 'Explore, architect, and review helpers.'],
@@ -255,7 +256,7 @@ const ENVIRONMENT = [
   {
     icon: <CloudArrowUp size={18} weight="duotone" />,
     t: 'Source, CI, and deploy',
-    d: 'GitHub with a protected main and a PR per change. CircleCI is the planned pipeline, and Vercel hosts the web app with a long-lived host for the API.',
+    d: 'GitHub with a protected main and a PR per change. GitHub Actions runs lint, typecheck, and tests on every PR, and Vercel hosts the web app with a long-lived host for the API.',
   },
 ];
 
@@ -277,7 +278,7 @@ const MANUAL = [
   'Accepted or rejected each review finding, and made the final merge call on every PR.',
 ];
 
-const DECISIONS = [
+const DECISIONS: [string, string][] = [
   [
     'Owned the layering',
     'Ports and adapters, a pure domain, and one generic executor that wraps every provider. I set this structure up front so the resilience engineering stays visible instead of buried in a gateway.',
@@ -300,7 +301,7 @@ const DECISIONS = [
   ],
   [
     'Overruled the review panel where it was wrong',
-    'I kept a resource policy the security pass wanted scoped, and threw out a contrast warning that was a false alarm once the real ratio was computed. The panel advises, it does not decide.',
+    'I kept a resource policy the security pass wanted scoped, and rejected a contrast warning on the muted text after I computed the real ratio at 6 to 1. The panel advises, it does not decide.',
   ],
 ];
 
