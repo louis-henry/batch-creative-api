@@ -31,3 +31,18 @@ export async function fetchJob(jobId: string): Promise<BatchResult> {
   if (!res.ok) throw new Error(`could not load job (${String(res.status)})`);
   return (await res.json()) as BatchResult;
 }
+
+/**
+ * Downloads via a blob, not an `<a download>`: the `download` attribute is
+ * ignored for cross-origin URLs (the API serves images from another origin).
+ */
+export async function downloadImage(url: string, filename: string): Promise<void> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('download failed');
+  const blobUrl = URL.createObjectURL(await res.blob());
+  const anchor = document.createElement('a');
+  anchor.href = blobUrl;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(blobUrl);
+}

@@ -41,17 +41,26 @@ export function Controls({
         />
       </div>
 
-      <label className="flex cursor-pointer items-center justify-between gap-3">
-        <span className="flex items-center gap-2 text-sm">
-          <Zap className="h-4 w-4 text-primary" />
-          Chaos mode
-          <span className="text-xs text-muted">force primary to fail</span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex flex-col">
+          <span id="chaos-label" className="flex items-center gap-2 text-sm">
+            <Zap aria-hidden="true" className="h-4 w-4 text-primary" />
+            Chaos mode
+          </span>
+          <span id="chaos-desc" className="text-xs text-muted">
+            Force the primary provider to fail
+          </span>
         </span>
-        <Switch checked={chaos} onCheckedChange={onChaos} aria-label="Chaos mode" />
-      </label>
+        <Switch
+          checked={chaos}
+          onCheckedChange={onChaos}
+          aria-labelledby="chaos-label"
+          aria-describedby="chaos-desc"
+        />
+      </div>
 
       <Button onClick={onRun} disabled={!canRun || running}>
-        <Sparkles className="h-4 w-4" />
+        <Sparkles aria-hidden="true" className="h-4 w-4" />
         {running ? 'Generating…' : 'Generate posts'}
       </Button>
     </div>

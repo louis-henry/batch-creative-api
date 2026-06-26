@@ -6,6 +6,8 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1),
   PORT: z.coerce.number().int().positive().default(8787),
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:8787'),
+  // Allowed browser origin for CORS; omit to allow any origin (dev default).
+  WEB_ORIGIN: z.string().url().optional(),
   // When true, the primary image provider always fails so failover is observable.
   CHAOS: z
     .enum(['true', 'false'])

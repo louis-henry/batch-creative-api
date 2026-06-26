@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent } from 'react';
+import { useId, useRef, useState, type DragEvent } from 'react';
 import { ImagePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,7 @@ const imagesOnly = (list: FileList | null): File[] =>
 
 export function Dropzone({ label, hint, onFiles }: DropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const hintId = useId();
   const [over, setOver] = useState(false);
 
   const onDrop = (e: DragEvent): void => {
@@ -25,7 +26,7 @@ export function Dropzone({ label, hint, onFiles }: DropzoneProps) {
     <>
       <button
         type="button"
-        aria-label={label}
+        aria-describedby={hintId}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
@@ -38,9 +39,11 @@ export function Dropzone({ label, hint, onFiles }: DropzoneProps) {
           over && 'border-primary bg-primary/10',
         )}
       >
-        <ImagePlus className="h-5 w-5 text-primary" />
+        <ImagePlus aria-hidden="true" className="h-5 w-5 text-primary" />
         <span className="text-sm font-medium">{label}</span>
-        <span className="text-xs text-muted">{hint}</span>
+        <span id={hintId} className="text-xs text-muted">
+          {hint}
+        </span>
       </button>
       <input
         ref={inputRef}

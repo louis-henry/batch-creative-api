@@ -7,29 +7,31 @@ function StatusBadge({ item }: { item: ItemView }) {
   if (item.status === 'done') {
     return (
       <Badge tone="done">
-        <CheckCircle2 className="h-3 w-3" /> {item.result.providerUsed}
+        <CheckCircle2 aria-hidden="true" className="h-3 w-3" /> {item.result.providerUsed}
       </Badge>
     );
   }
   if (item.status === 'failed') {
     return (
       <Badge tone="failed">
-        <XCircle className="h-3 w-3" /> failed
+        <XCircle aria-hidden="true" className="h-3 w-3" /> failed
       </Badge>
     );
   }
   return (
     <Badge tone="pending">
-      <Loader2 className="h-3 w-3 animate-spin" /> generating
+      <Loader2 aria-hidden="true" className="h-3 w-3 animate-spin" /> generating
     </Badge>
   );
 }
 
+// Note: status is announced via the single summary live region in App, not here —
+// a per-row live region would spam assistive tech as many rows mutate at once.
 export function ProgressList({ items }: { items: ItemView[] }) {
   if (items.length === 0) return null;
 
   return (
-    <div aria-live="polite" className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2">
       <AnimatePresence initial={false}>
         {items.map((item) => (
           <motion.div

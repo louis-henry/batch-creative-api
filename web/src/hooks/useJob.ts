@@ -10,6 +10,9 @@ export function useJob(jobId: string | null): UseQueryResult<BatchResult> {
     queryKey: ['job', jobId],
     queryFn: () => fetchJob(jobId ?? ''),
     enabled: jobId !== null,
-    refetchInterval: (query) => (query.state.data?.status === 'done' ? false : POLL_MS),
+    refetchInterval: (query) => {
+      if (query.state.status === 'error') return false; // stop polling a job we can't reach
+      return query.state.data?.status === 'done' ? false : POLL_MS;
+    },
   });
 }

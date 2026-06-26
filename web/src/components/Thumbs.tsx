@@ -29,9 +29,9 @@ export function Thumbs({ files, onRemove }: ThumbsProps) {
             type="button"
             aria-label={`Remove ${file.name}`}
             onClick={() => onRemove(i)}
-            className="absolute right-0 top-0 rounded-bl bg-black/60 p-0.5 text-foreground opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+            className="absolute right-0 top-0 rounded-bl bg-black/70 p-0.5 text-foreground opacity-70 transition hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           >
-            <X className="h-3 w-3" />
+            <X aria-hidden="true" className="h-3 w-3" />
           </button>
         </div>
       ))}

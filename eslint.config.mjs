@@ -38,8 +38,9 @@ export default tseslint.config(
     },
   },
   {
-    // React components are JSX-heavy; the line caps target logic, not markup,
-    // and the JSX return type is inferred.
+    // React components are JSX-heavy: line caps and cyclomatic complexity count
+    // conditional markup, not logic. sonarjs/cognitive-complexity stays ON, so
+    // genuinely complex component logic is still caught. JSX return types infer.
     files: ['**/*.tsx'],
     rules: {
       'max-lines-per-function': 'off',

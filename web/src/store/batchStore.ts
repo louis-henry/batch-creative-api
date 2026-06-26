@@ -15,6 +15,7 @@ interface BatchState {
   setConcurrency: (n: number) => void;
   setChaos: (value: boolean) => void;
   setJobId: (id: string | null) => void;
+  reset: () => void;
 }
 
 export const useBatchStore = create<BatchState>((set) => ({
@@ -30,4 +31,5 @@ export const useBatchStore = create<BatchState>((set) => ({
   setConcurrency: (concurrency) => set({ concurrency }),
   setChaos: (chaos) => set({ chaos }),
   setJobId: (jobId) => set({ jobId }),
+  reset: () => set({ products: [], refs: [], jobId: null }),
 }));

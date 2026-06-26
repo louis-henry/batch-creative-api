@@ -49,7 +49,11 @@ const startBatch: StartBatch = (jobId, products, refs, options) => {
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
 
-const app = createApp({ jobStore, startBatch });
+const app = createApp({
+  jobStore,
+  startBatch,
+  ...(env.WEB_ORIGIN !== undefined ? { corsOrigin: env.WEB_ORIGIN } : {}),
+});
 app.use(
   '/images/*',
   serveStatic({ root: OUTPUT_DIR, rewriteRequestPath: (p) => p.replace(/^\/images/, '') }),
