@@ -1,73 +1,107 @@
-# Batch Creative API
+# Batch Creative Studio
 
 Turn **N product images + 1–2 reference images** into styled social posts —
 **square (1080²)**, **story (1080×1920)**, and **wide banner** — per product, with
-the engineering that makes generative-AI usable in production: **retries**,
+the engineering that makes generative AI usable in production: **retries**,
 **multi-provider failover**, and a **consistent visual style** across the batch.
 
 > Engineering take-home, Track 02 (Batch Creative API).
 
-## Live demo
+![Batch Creative Studio](docs/assets/studio.png)
 
-- App: _link added in Phase 6_
-- Walkthrough (90s): _link added in Phase 6_
+## What it does
 
-## Quickstart
-
-```bash
-pnpm install
-cp .env.example .env   # add your keys
-pnpm --filter @app/server dev
-# in another shell
-pnpm --filter @app/web dev
-```
+Upload a set of product photos and a couple of reference images that set the mood.
+The app reads the style from the references once, then for every product it
+generates an in-context image, writes ad copy, composites the copy into the three
+formats, and streams progress back to the UI — continuing past any single failure.
 
 ## How it works
 
 ```
-POST /batch  { products[], refs[] }  → { jobId }
-GET  /batch/:jobId                    → { succeeded[], failed[] }
+POST /batch  (products[], refs[])  → { jobId }                    work continues async
+GET  /batch/:jobId           → { status, succeeded[], failed[] }  the UI polls until done
 
-per product:  style (extracted once from refs)
-              → image  (provider chain: retry + failover)
-              → copy   (structured, model fallback)
-              → composite (overlay + resize to 3 formats)
+per batch:   style = describe(refs)              once, applied to every product
+per product: image = execute([gemini, openai])   retry + failover (+ optional judge gate)
+             copy  = openrouter(structured)       validated against a Zod schema
+             composite → square / story / banner → store
+             → partial success: one item failing never fails the batch
 ```
 
-The reliability layer is a single generic **resilience executor** that wraps every
-provider call (exponential backoff + jitter, per-attempt timeout, failover to the
-next provider, structured aggregate errors). A `CHAOS` flag forces the primary
-image provider to fail so failover is observable end-to-end.
+The reliability layer is a single generic **resilience executor** wrapping every
+provider call: exponential backoff + jitter, per-attempt `AbortController`
+timeout, failover to the next provider, and a structured `AggregateError` if all
+fail. A **chaos toggle** forces the primary image provider to fail so failover is
+observable live in the UI. Visual consistency comes from a **style spec** derived
+once from the references and applied — with a fixed seed — to every product.
 
-Visual consistency comes from a **style spec** derived once from the reference
-images and applied — with a fixed seed — to every product.
+## Quickstart (local)
 
-## Architecture
+Requires Node 22+ and pnpm (`corepack enable` provides it).
 
-Ports & adapters, layered: `domain` (pure) → `application` (orchestration +
-resilience) → `adapters` (providers, compositor, storage, jobs) → `interface`
-(HTTP). See [`docs/architecture/overview.md`](docs/architecture/overview.md) and
-the [ADRs](docs/architecture/adr).
+```bash
+pnpm install
+cp .env.example server/.env        # add your provider keys (see below)
+
+pnpm --filter @app/server dev      # API on :8787
+# then, in a second terminal:
+pnpm --filter @app/web dev         # UI on :5173
+```
+
+Open http://localhost:5173 and drag the images in [`samples/`](samples) onto the
+two dropzones (a couple of products + one reference), then **Generate**. Flip
+**Chaos mode** first to watch failover from the primary to the secondary provider.
+
+### Environment
+
+| Variable             | Required | Purpose                                                                  |
+| -------------------- | -------- | ------------------------------------------------------------------------ |
+| `OPENROUTER_API_KEY` | yes      | Copy generation + style read + judge ([key](https://openrouter.ai/keys)) |
+| `GEMINI_API_KEY`     | yes      | Primary image provider ([key](https://aistudio.google.com/apikey))       |
+| `OPENAI_API_KEY`     | yes      | Failover image provider ([key](https://platform.openai.com/api-keys))    |
+| `PORT`               | no       | API port (default 8787)                                                  |
+| `PUBLIC_BASE_URL`    | no       | Base URL images are served from                                          |
+| `WEB_ORIGIN`         | no       | Allowed CORS origin (defaults to any)                                    |
+
+The web app reads `VITE_API_URL` (defaults to `http://localhost:8787`).
 
 ## Tech stack
 
 - **API:** Node + TypeScript (strict), Hono, Zod, sharp, p-limit, pino
-- **Providers:** OpenRouter (copy + judge), Gemini 2.5 Flash Image + OpenAI
-  `gpt-image-1` (images, behind one port)
-- **Web:** Vite + React + Tailwind + shadcn/ui + Zustand + TanStack Query + Zod
+- **Providers:** OpenRouter (copy + style + judge), Gemini 2.5 Flash Image +
+  OpenAI `gpt-image-1` (images, behind one port)
+- **Web:** Vite + React + Tailwind v4 + shadcn-style Radix components, Zustand,
+  TanStack Query, Framer Motion, sonner
+- **Shared:** `@app/contracts` — Zod schemas used by both API and web
+
+## Quality
+
+- `pnpm lint && pnpm typecheck && pnpm test && pnpm build` — all green; CI runs them on every PR.
+- **97 behaviour-focused tests** covering the resilience executor, batch
+  orchestration, providers (via injected `fetch`), the compositor, and the HTTP layer.
+- Standards are **machine-enforced** (ESLint complexity caps, Husky, commitlint) —
+  see [`docs/governance/`](docs/governance).
+- Every phase shipped as a reviewed PR; see [the architecture decisions](docs/architecture/adr).
 
 ## Scoping & judgment
 
-The brief asks for a focused half-day and values judgment over polish. What I
-**deliberately did not build**, and why:
+The brief asks for a focused half-day and values judgment over polish. Deliberate cuts:
 
-- **No queue/workers** — in-memory job store + polling is sufficient at demo
-  scale; a real queue is the first thing I'd add for production volume.
-- **No database / auth / accounts** — out of scope for the creative pipeline.
-- **No rate-limit or multi-region infra** — the brief explicitly deprioritizes
-  infra polish; I spent that budget on failover, consistency, and output quality.
+- **No queue/workers** — in-memory job store + polling is enough at this scale; a
+  real queue is the first production add. No DB, no auth, no accounts.
+- **No global rate-limit / cross-batch concurrency cap** — per-request body and
+  per-batch concurrency are bounded; the rest is documented in
+  [`docs/governance/security.md`](docs/governance/security.md).
+- The **judge gate** is wired but defaults off (cost); enable via `judgeThreshold`.
 
-See [`docs/governance/`](docs/governance) for the standards this repo enforces.
+Effort went into the things the track actually grades: visible, tested failover;
+consistent style; validated AI outputs; and a UI that demonstrates it.
+
+## Deploying
+
+See [`docs/deploy.md`](docs/deploy.md) — API on Railway/Render (long-lived, for the
+async batch), web on Vercel (static), with the env wiring for both.
 
 ## Repository layout
 
@@ -75,5 +109,5 @@ See [`docs/governance/`](docs/governance) for the standards this repo enforces.
 server/              Hono API (the deliverable)
 web/                 Vite + React demo
 packages/contracts/  Zod schemas shared by server + web
-docs/                governance + architecture (ADRs)
+docs/                governance, architecture (ADRs), deploy guide
 ```

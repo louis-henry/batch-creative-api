@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { mkdirSync } from 'node:fs';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';

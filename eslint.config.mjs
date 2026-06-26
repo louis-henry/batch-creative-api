@@ -10,7 +10,15 @@ import prettier from 'eslint-config-prettier';
  */
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/build/**', '**/coverage/**', 'notes/**', '**/*.cjs', '**/*.d.ts'],
+    ignores: [
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      'notes/**',
+      '**/*.cjs',
+      '**/*.d.ts',
+      '**/scripts/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.strict,

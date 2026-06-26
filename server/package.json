@@ -7,11 +7,12 @@
     "dev": "tsx watch src/main.ts",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsup"
   },
   "dependencies": {
     "@app/contracts": "workspace:*",
     "@hono/node-server": "^1.13.0",
+    "dotenv": "^17.4.2",
     "hono": "^4.6.0",
     "p-limit": "^6.1.0",
     "pino": "^9.4.0",
@@ -19,6 +20,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "tsup": "^8.5.1",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }
