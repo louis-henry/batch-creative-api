@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-background: oklch(0.165 0.012 274);
+  --color-surface: oklch(0.213 0.016 274);
+  --color-surface-2: oklch(0.255 0.018 274);
+  --color-border: oklch(0.32 0.02 274);
+  --color-foreground: oklch(0.96 0.005 274);
+  --color-muted: oklch(0.68 0.02 274);
+  --color-primary: oklch(0.62 0.2 272);
+  --color-primary-foreground: oklch(0.99 0 0);
+  --color-success: oklch(0.72 0.16 155);
+  --color-danger: oklch(0.66 0.2 18);
+
+  --radius-xl: 1rem;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(60rem 60rem at 80% -10%, oklch(0.62 0.2 272 / 0.18), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 110%, oklch(0.62 0.16 200 / 0.12), transparent 55%),
+    var(--color-background);
+  color: var(--color-foreground);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
