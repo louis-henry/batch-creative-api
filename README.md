@@ -35,9 +35,9 @@ the whole batch — here, three unrelated products from a single reference:
 |                                  `#CyberpunkDecor` `#LumantisLighting`                                  |                                      `#CyberpunkTech` `#FuturePhone`                                      |                                          `#CyberpunkHair` `#VeloraHaircare`                                          |
 
 Same dusk skyline, same warm-to-deep-blue palette, same ledge framing — three
-different products, one batch. _(This run also failed over from the primary image
-provider to the secondary mid-batch; the output above is unaffected — that's the
-point.)_
+different products, one batch. Every product runs through retry + multi-provider
+failover; flip **Chaos mode** in the app to watch the primary fail over to the
+secondary, live.
 
 ## How it works
 
