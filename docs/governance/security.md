@@ -14,8 +14,9 @@ Scope-appropriate for a take-home, but with production instincts.
 
 - Every request is validated with Zod at the `interface` layer before reaching
   application logic. Reject early with a typed `ValidationError`.
-- Validate the **shape and size** of uploaded images (count, mime, byte limit) to
-  avoid resource exhaustion.
+- Validate the **shape and size** of uploaded images (count, byte limit, and a
+  best-effort MIME check — the declared `Content-Type` is client-supplied, so it's
+  a hint; sharp/providers reject genuine non-images downstream).
 - Outbound provider responses are treated as untrusted: parse/validate before use.
 
 ## Dependencies
@@ -41,7 +42,8 @@ Deliberately deferred for this take-home, with the production fix noted:
   MIME, and size before buffering. There is **no global cap on concurrent batches**
   and **no auth/rate-limit** on the endpoint — production would add a request rate
   limit, a process-wide in-flight-batch semaphore, and a shared key, plus TTL/size
-  eviction on the job store, to bound memory and provider spend.
+  eviction on the **job store (memory) and the `.output` image directory (disk)**,
+  to bound memory, disk, and provider spend.
 - **`GET /batch/:id`** has no per-caller ownership binding; job ids are unguessable
   (UUIDv4), so enumeration is impractical, but an auth model would bind job to caller.
 
