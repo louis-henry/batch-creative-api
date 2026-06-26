@@ -21,9 +21,18 @@ explicit, reviewable process rather than ad-hoc prompting:
 - **Guardrails for the AI** — [`AGENTS.md`](../../AGENTS.md) and
   [`CLAUDE.md`](../../CLAUDE.md) encode the architecture, code style, and "never
   touch `main`" rules so the agent works inside the same standards as a human.
+- **Adversarial review panel** — every PR is reviewed by a panel of _specialised
+  reviewer subagents_ (correctness, types/architecture, security, accessibility)
+  running in parallel; their findings are synthesised and addressed before merge.
+  This caught real defects a single pass would have missed — e.g. a non-
+  deterministic timeout race mislabeling a timeout as non-retryable, the job store
+  leaking live mutable arrays to pollers, image-key collisions silently
+  overwriting files, Gemini missing `responseModalities` (would have broken _every_
+  image call), and a Serious light-theme contrast failure (~1.7:1) on accent text.
 
-Principle: AI accelerates the work, but every change passes the same gates
-(lint, types, tests, review) and nothing merges unread.
+Principle: AI accelerates the work, but every change passes the same gates (lint,
+types, tests, **adversarial review**) and nothing merges unread. The leverage is
+the _harness_ — structured workflow + parallel review — not blind trust in output.
 
 ## AI in the product (runtime)
 
