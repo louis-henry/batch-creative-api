@@ -8,6 +8,8 @@ const envSchema = z.object({
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:8787'),
   // Allowed browser origin for CORS; omit to allow any origin (dev default).
   WEB_ORIGIN: z.string().url().optional(),
+  // Enable the LLM quality gate: regenerate/fail over when a post scores below this (0..1).
+  JUDGE_THRESHOLD: z.coerce.number().min(0).max(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

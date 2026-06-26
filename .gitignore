@@ -17,6 +17,7 @@ build/
 
 # Generated images / runtime output
 server/.output/
+.output/
 output/
 
 # Editor / OS

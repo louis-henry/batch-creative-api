@@ -17,9 +17,10 @@ domain/      pure logic — formats, layout math, style spec, result types
 adapters/    implement ports — image/text providers, sharp compositor, storage, jobs
 ```
 
-**Dependency rule:** arrows point inward. `domain` knows nothing external;
-`application` depends on `domain` + ports; `adapters` implement those ports;
-`interface` wires everything at the edge.
+**Dependency rule:** arrows point inward. `domain` depends only on the shared
+`@app/contracts` kernel (pure Zod schemas/types, no I/O) — no vendor SDKs, no
+framework; `application` depends on `domain` + ports; `adapters` implement those
+ports; `interface` wires everything at the edge.
 
 ## Request flow
 

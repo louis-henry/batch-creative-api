@@ -31,10 +31,11 @@ export function createGeminiImageProvider(deps: {
           signal,
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': deps.apiKey },
           // responseModalities IMAGE is required so the model returns an image
-          // candidate rather than a text-only one.
+          // candidate rather than a text-only one. The seed (derived once from
+          // the references) makes generation reproducible across the batch.
           body: JSON.stringify({
             contents: [{ parts }],
-            generationConfig: { responseModalities: ['IMAGE'] },
+            generationConfig: { responseModalities: ['IMAGE'], seed: style.seed },
           }),
         },
         fetchFn,

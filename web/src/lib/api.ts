@@ -1,4 +1,4 @@
-import type { BatchResult } from '@app/contracts';
+import { batchResultSchema, type BatchResult } from '@app/contracts';
 
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8787';
 
@@ -29,7 +29,7 @@ export async function createBatch(
 export async function fetchJob(jobId: string): Promise<BatchResult> {
   const res = await fetch(`${API_URL}/batch/${jobId}`);
   if (!res.ok) throw new Error(`could not load job (${String(res.status)})`);
-  return (await res.json()) as BatchResult;
+  return batchResultSchema.parse(await res.json());
 }
 
 /**

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { Download, ImageOff } from 'lucide-react';
 import type { ItemResult, PostResult } from '@app/contracts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -32,7 +33,9 @@ function PostImage({ post, alt }: { post: PostResult; alt: string }) {
 
 function ResultCard({ result }: { result: ItemResult }) {
   const download = (post: PostResult): void => {
-    downloadImage(post.url, downloadName(result.id, post.format)).catch(() => undefined);
+    downloadImage(post.url, downloadName(result.id, post.format)).catch((e: unknown) => {
+      toast.error(e instanceof Error ? e.message : 'Download failed');
+    });
   };
 
   return (
@@ -53,7 +56,7 @@ function ResultCard({ result }: { result: ItemResult }) {
         {result.posts.map((p) => (
           <TabsContent key={p.format} value={p.format} className="space-y-2">
             <div className="flex justify-center overflow-hidden rounded-lg border border-border bg-black/30">
-              <PostImage post={p} alt={`${result.id} ${p.format} post`} />
+              <PostImage post={p} alt={`Generated ${p.format} social post`} />
             </div>
             <Button variant="outline" size="sm" className="w-full" onClick={() => download(p)}>
               <Download aria-hidden="true" className="h-3.5 w-3.5" /> Download {p.format}

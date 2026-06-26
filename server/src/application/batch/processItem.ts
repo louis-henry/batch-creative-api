@@ -13,6 +13,7 @@ import type { ImageProvider } from '../ports/imageProvider.js';
 import type { TextProvider } from '../ports/textProvider.js';
 import type { Compositor } from '../ports/compositor.js';
 import type { ImageStore } from '../ports/imageStore.js';
+import type { Logger } from '../ports/logger.js';
 
 export interface ProductInput {
   readonly id: string;
@@ -28,6 +29,7 @@ export interface ProcessItemDeps {
   readonly policy: RetryPolicy;
   readonly chaos?: boolean;
   readonly judgeThreshold?: number;
+  readonly logger?: Logger;
 }
 
 const asProvider = <T>(name: string, run: (signal: AbortSignal) => Promise<T>): Provider<T> => ({
@@ -49,8 +51,17 @@ export async function processItem(
     ],
     deps.policy,
   );
-  const formats = await deps.compositor.render(generated.image, copy);
-  const posts = await storePosts(input.id, formats, deps.store);
+  // Bound the composite + store stage with the same policy timeout, so a wedged
+  // sharp render or disk write can't leave the item (and the job) hanging.
+  const posts = await execute(
+    [
+      asProvider('composite+store', async () => {
+        const formats = await deps.compositor.render(generated.image, copy);
+        return storePosts(input.id, formats, deps.store);
+      }),
+    ],
+    deps.policy,
+  );
   return { id: input.id, providerUsed: generated.providerUsed, copy, posts };
 }
 
@@ -71,7 +82,8 @@ function generateImage(
       name: provider.name,
       run: async (signal) => {
         if (deps.chaos === true && index === 0) {
-          throw new ProviderError(`${provider.name} disabled by chaos flag`, { retryable: true });
+          // Non-retryable so failover to the secondary is immediate in the demo.
+          throw new ProviderError(`${provider.name} disabled by chaos flag`, { retryable: false });
         }
         const image = await provider.generate({
           product: input.product,
@@ -102,7 +114,10 @@ async function gateOnQuality(
   let score: number;
   try {
     ({ score } = await deps.text.judge({ image, style, signal }));
-  } catch {
+  } catch (error) {
+    // Best-effort: a judge outage must not discard a good image — but make the
+    // degraded gate observable rather than silently disabling quality control.
+    deps.logger?.warn({ err: error }, 'judge call failed; passing quality gate');
     return;
   }
   if (score < deps.judgeThreshold) {

@@ -34,7 +34,8 @@ provider call: exponential backoff + jitter, per-attempt `AbortController`
 timeout, failover to the next provider, and a structured `AggregateError` if all
 fail. A **chaos toggle** forces the primary image provider to fail so failover is
 observable live in the UI. Visual consistency comes from a **style spec** derived
-once from the references and applied — with a fixed seed — to every product.
+once from the references and applied to every product, with a stable seed passed
+to providers that support it (Gemini).
 
 ## Quickstart (local)
 
@@ -63,6 +64,7 @@ two dropzones (a couple of products + one reference), then **Generate**. Flip
 | `PORT`               | no       | API port (default 8787)                                                  |
 | `PUBLIC_BASE_URL`    | no       | Base URL images are served from                                          |
 | `WEB_ORIGIN`         | no       | Allowed CORS origin (defaults to any)                                    |
+| `JUDGE_THRESHOLD`    | no       | Enable the LLM quality gate (0–1); off when unset                        |
 
 The web app reads `VITE_API_URL` (defaults to `http://localhost:8787`).
 
@@ -93,7 +95,7 @@ The brief asks for a focused half-day and values judgment over polish. Deliberat
 - **No global rate-limit / cross-batch concurrency cap** — per-request body and
   per-batch concurrency are bounded; the rest is documented in
   [`docs/governance/security.md`](docs/governance/security.md).
-- The **judge gate** is wired but defaults off (cost); enable via `judgeThreshold`.
+- The **judge gate** is wired but defaults off (cost); enable via `JUDGE_THRESHOLD`.
 
 Effort went into the things the track actually grades: visible, tested failover;
 consistent style; validated AI outputs; and a UI that demonstrates it.

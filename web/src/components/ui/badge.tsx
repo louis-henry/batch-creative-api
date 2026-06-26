@@ -8,9 +8,9 @@ const badgeVariants = cva(
     variants: {
       tone: {
         neutral: 'bg-surface-2 text-muted',
-        pending: 'bg-primary/15 text-primary',
-        done: 'bg-success/15 text-success',
-        failed: 'bg-danger/15 text-danger',
+        pending: 'bg-primary/25 text-foreground',
+        done: 'bg-success/20 text-foreground',
+        failed: 'bg-danger/25 text-foreground',
       },
     },
     defaultVariants: { tone: 'neutral' },

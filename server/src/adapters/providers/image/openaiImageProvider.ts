@@ -22,6 +22,7 @@ export function createOpenAiImageProvider(deps: {
       const form = new FormData();
       form.append('model', 'gpt-image-1');
       form.append('prompt', buildImagePrompt(style));
+      form.append('size', '1024x1024'); // bound latency/output; resized to formats downstream
       form.append(
         'image',
         new Blob([new Uint8Array(product)], { type: 'image/png' }),

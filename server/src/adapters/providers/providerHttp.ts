@@ -21,7 +21,8 @@ export function ensureOk(provider: string, status: number, bodyText: string): vo
   throw new ProviderError(`${provider} responded with HTTP ${status}`, {
     retryable: status === 429 || status >= 500,
     status,
-    cause: redactSecrets(bodyText.slice(0, 300)),
+    // Redact before slicing so a token straddling the cutoff can't leave a fragment.
+    cause: redactSecrets(bodyText).slice(0, 300),
   });
 }
 
@@ -36,16 +37,16 @@ export async function fetchText(
   init: RequestInit,
   fetchFn: FetchFn,
 ): Promise<{ status: number; text: string }> {
-  let response: Response;
   try {
-    response = await fetchFn(url, init);
+    const response = await fetchFn(url, init);
+    return { status: response.status, text: await response.text() };
   } catch (cause) {
     // An intentional cancellation is not a transient transport failure — let it
-    // propagate so it isn't retried.
+    // propagate so it isn't retried. Reading the body is inside the try too, so
+    // a stream error mid-drain is classified retryable like any transport fault.
     if (cause instanceof Error && cause.name === 'AbortError') throw cause;
     throw new ProviderError(`${provider} request failed`, { retryable: true, cause });
   }
-  return { status: response.status, text: await response.text() };
 }
 
 export function parseJson<T>(provider: string, text: string): T {
