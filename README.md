@@ -52,8 +52,8 @@ pnpm --filter @app/web dev         # UI on :5173
 ```
 
 Open http://localhost:5173, pick a couple of the built-in product samples and a
-reference (or upload your own from [`samples/`](samples)), then **Generate**. Flip
-**Chaos mode** first to watch failover from the primary to the secondary provider.
+reference (or upload your own), then **Generate**. Flip **Chaos mode** first to
+watch failover from the primary to the secondary provider.
 
 ### Environment
 

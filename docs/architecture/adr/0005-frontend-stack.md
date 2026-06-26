@@ -15,8 +15,8 @@ maintainable — without becoming a second large project.
 ## Decision
 
 A **Vite + React + TypeScript** single-page app with **Tailwind v4** and
-**shadcn-style Radix components** (hand-authored Button/Card/Slider/Switch/Tabs/
-Badge). State is split: **Zustand** for client state (selected files, knobs,
+**shadcn-style Radix components** (hand-authored Button/Slider/Switch/HoverCard).
+State is split: **Zustand** for client state (selected files, knobs,
 current job id) and **TanStack Query** for server state (polling the job).
 **Framer Motion** adds restrained animation, **sonner** handles toasts, and the
 **`@app/contracts`** package shares Zod schemas with the API so the two never drift.
