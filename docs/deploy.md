@@ -8,8 +8,8 @@ batch's execution time, which is why the API isn't on Vercel (see
 
 ## API — Railway or Render
 
-1. New service from this repo. Build: `pnpm install && pnpm --filter @app/server build`.
-   Start: `node server/dist/main.js`.
+1. New service from this repo. Build: `pnpm install && pnpm --filter @app/server build`
+   (tsup bundles the shared `@app/contracts` package in). Start: `node server/dist/main.js`.
 2. Set environment variables:
    - `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`
    - `PORT` — provided by the platform
@@ -29,7 +29,7 @@ batch's execution time, which is why the API isn't on Vercel (see
 ## Smoke test
 
 ```bash
-curl -F products=@product.png -F refs=@mood.png https://<api>/batch
+curl -F products=@samples/product-bottle.png -F refs=@samples/reference-warm.png https://<api>/batch
 # → { "jobId": "..." }
 curl https://<api>/batch/<jobId>
 # → { status, succeeded[], failed[] }

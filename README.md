@@ -19,8 +19,8 @@ formats, and streams progress back to the UI — continuing past any single fail
 ## How it works
 
 ```
-POST /batch  (products[], refs[])  → { jobId }            work continues async
-GET  /batch/:jobId                  → { succeeded[], failed[] }   the UI polls
+POST /batch  (products[], refs[])  → { jobId }                    work continues async
+GET  /batch/:jobId           → { status, succeeded[], failed[] }  the UI polls until done
 
 per batch:   style = describe(refs)              once, applied to every product
 per product: image = execute([gemini, openai])   retry + failover (+ optional judge gate)
@@ -38,17 +38,20 @@ once from the references and applied — with a fixed seed — to every product.
 
 ## Quickstart (local)
 
-Requires Node 22+ and pnpm.
+Requires Node 22+ and pnpm (`corepack enable` provides it).
 
 ```bash
 pnpm install
 cp .env.example server/.env        # add your provider keys (see below)
 
 pnpm --filter @app/server dev      # API on :8787
+# then, in a second terminal:
 pnpm --filter @app/web dev         # UI on :5173
 ```
 
-Open http://localhost:5173. To watch failover, flip **Chaos mode** before running.
+Open http://localhost:5173 and drag the images in [`samples/`](samples) onto the
+two dropzones (a couple of products + one reference), then **Generate**. Flip
+**Chaos mode** first to watch failover from the primary to the secondary provider.
 
 ### Environment
 
