@@ -9,7 +9,9 @@ import prettier from 'eslint-config-prettier';
  * readable. See docs/governance/engineering-standards.md for the rationale.
  */
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/build/**', '**/coverage/**', 'notes/**', '**/*.cjs'] },
+  {
+    ignores: ['**/dist/**', '**/build/**', '**/coverage/**', 'notes/**', '**/*.cjs', '**/*.d.ts'],
+  },
   js.configs.recommended,
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
@@ -33,6 +35,17 @@ export default tseslint.config(
       'sonarjs/no-duplicate-string': 'off',
       complexity: 'off',
       'max-params': 'off',
+    },
+  },
+  {
+    // React components are JSX-heavy; the line caps target logic, not markup,
+    // and the JSX return type is inferred.
+    files: ['**/*.tsx'],
+    rules: {
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      complexity: 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
   },
   prettier,
