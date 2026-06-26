@@ -32,7 +32,7 @@ export function ImagePicker({
     .filter(({ f }) => !sampleNames.has(f.name));
   const full = files.length >= max;
 
-  // Identity of the upload set only — so toggling a sample (which changes `files`
+  // Identity of the upload set only, so toggling a sample (which changes `files`
   // but not the uploads) doesn't needlessly revoke/recreate the upload blob URLs.
   const uploadKey = uploads.map(({ f }) => `${f.name}:${String(f.size)}`).join('|');
   const [uploadUrls, setUploadUrls] = useState<string[]>([]);
