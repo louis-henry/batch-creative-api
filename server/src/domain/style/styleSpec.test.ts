@@ -42,6 +42,17 @@ describe('buildStyleSpec', () => {
     expect(a).not.toBe(b);
   });
 
+  it('derives seeds within signed int32 range (providers type seed as INT32)', () => {
+    // Regression: an unsigned (>>> 0) seed could exceed 2^31-1 and Gemini rejects
+    // it with a 400, silently forcing failover on ~half of all descriptors.
+    const MAX_INT32 = 0x7fffffff;
+    for (let i = 0; i < 250; i++) {
+      const seed = buildStyleSpec({ descriptor: `neon city skyline variant ${String(i)}` }).seed;
+      expect(seed).toBeGreaterThanOrEqual(0);
+      expect(seed).toBeLessThanOrEqual(MAX_INT32);
+    }
+  });
+
   it('keeps an explicitly provided seed, including 0', () => {
     expect(buildStyleSpec({ descriptor: 'x', seed: 42 }).seed).toBe(42);
     // 0 is falsy: this fails if `??` is ever weakened to `||`.
