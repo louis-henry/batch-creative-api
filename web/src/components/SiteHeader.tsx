@@ -1,4 +1,4 @@
-import { Stack } from '@phosphor-icons/react';
+import { Stack, GithubLogo } from '@phosphor-icons/react';
 import { Link, NavLink } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,15 @@ export function SiteHeader() {
         >
           How it was built
         </NavLink>
+        <a
+          href="https://github.com/louis-henry/batch-creative-api"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="View the repository on GitHub"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition hover:bg-surface-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong"
+        >
+          <GithubLogo size={17} weight="bold" />
+        </a>
         <ThemeToggle />
       </div>
     </header>

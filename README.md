@@ -105,7 +105,7 @@ The web app reads `VITE_API_URL` (defaults to `http://localhost:8787`).
 ## Quality
 
 - `pnpm lint && pnpm typecheck && pnpm test && pnpm build` — all green; CI runs them on every PR.
-- **92 behaviour-focused tests** covering the resilience executor, batch
+- **93 behaviour-focused tests** covering the resilience executor, batch
   orchestration, providers (via injected `fetch`), and the HTTP layer.
 - Standards are **machine-enforced** (ESLint complexity caps, Husky, commitlint) —
   see [`docs/governance/`](docs/governance).
