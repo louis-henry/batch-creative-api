@@ -5,7 +5,7 @@ import type { TextProvider } from '../ports/textProvider.js';
 const text = (over: Partial<TextProvider> = {}): TextProvider => ({
   name: 'openrouter',
   describeStyle: () => Promise.resolve({ descriptor: 'sunlit linen', palette: ['#fff', '#eee'] }),
-  copy: () => Promise.resolve({ headline: 'H', subtext: 'S', cta: 'C' }),
+  writePost: () => Promise.resolve({ title: 'T', caption: 'C', hashtags: ['#x'] }),
   judge: () => Promise.resolve({ score: 1 }),
   ...over,
 });

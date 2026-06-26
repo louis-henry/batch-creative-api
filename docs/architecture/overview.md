@@ -12,9 +12,9 @@ interface/   Hono HTTP — validate, call application, map to HTTP responses
    │
 application/ orchestration — batch fan-out, resilience executor, style extraction
    │  (depends on ports, never on vendor SDKs)
-domain/      pure logic — formats, layout math, style spec, result types
+domain/      pure logic — style spec, result types
    ▲
-adapters/    implement ports — image/text providers, sharp compositor, storage, jobs
+adapters/    implement ports — image/text providers, storage, jobs
 ```
 
 **Dependency rule:** arrows point inward. `domain` depends only on the shared
@@ -31,9 +31,9 @@ POST /batch (products[], refs[])
   → extractStyleSpec(refs)            once per batch
   → runBatch: for each product (bounded concurrency)
        image = execute([gemini, openai], retryPolicy)   retry + failover
-       copy  = openrouter.copy(...)                      structured + validated
+       post  = openrouter.writePost(...)                 structured + validated
        [judge] score; retry/failover if below threshold
-       composite → square / story / banner → store
+       store image + social post
   → aggregate → { succeeded[], failed[{ id, reason }] }
 
 GET /batch/:jobId → status + results        (FE polls)
@@ -48,8 +48,8 @@ GET /batch/:jobId → status + results        (FE polls)
   pure functions, unit-tested deterministically.
 - **Style spec** (`application/style`) — one vision pass over the references yields
   a reusable descriptor + seed, giving a coherent look across the whole batch.
-- **Compositor** (`adapters/compositor`) — `sharp` overlays copy and derives the
-  three formats from a single generated base image.
+- **Post copywriter** (`adapters/providers/text`) — an OpenRouter LLM writes a
+  structured social post (title, caption, hashtags) per product, Zod-validated.
 - **Job store** (`adapters/jobs`) — in-memory for this scope; the interface is
   ready to swap for Redis/Upstash without touching application logic.
 

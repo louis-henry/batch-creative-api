@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { copySchema } from './copy.js';
-import { formatIdSchema } from './format.js';
+import { socialPostSchema } from './post.js';
 
 /** Options a client can pass to tune a batch run. */
 export const batchOptionsSchema = z.object({
@@ -9,19 +8,11 @@ export const batchOptionsSchema = z.object({
 });
 export type BatchOptions = z.infer<typeof batchOptionsSchema>;
 
-export const postResultSchema = z.object({
-  format: formatIdSchema,
-  url: z.string().min(1),
-  width: z.number().int().positive(),
-  height: z.number().int().positive(),
-});
-export type PostResult = z.infer<typeof postResultSchema>;
-
 export const itemResultSchema = z.object({
   id: z.string(),
   providerUsed: z.string(),
-  copy: copySchema,
-  posts: z.array(postResultSchema),
+  imageUrl: z.string().min(1),
+  post: socialPostSchema,
 });
 export type ItemResult = z.infer<typeof itemResultSchema>;
 

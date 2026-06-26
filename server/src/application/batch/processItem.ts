@@ -1,17 +1,10 @@
-import {
-  type FormatId,
-  FORMAT_IDS,
-  formatSpec,
-  type ItemResult,
-  type PostResult,
-} from '@app/contracts';
+import type { ItemResult } from '@app/contracts';
 import type { StyleSpec } from '../../domain/style/styleSpec.js';
 import { execute, type Provider } from '../resilience/executor.js';
 import { ProviderError } from '../resilience/errors.js';
 import type { RetryPolicy } from '../resilience/policy.js';
 import type { ImageProvider } from '../ports/imageProvider.js';
 import type { TextProvider } from '../ports/textProvider.js';
-import type { Compositor } from '../ports/compositor.js';
 import type { ImageStore } from '../ports/imageStore.js';
 import type { Logger } from '../ports/logger.js';
 
@@ -24,7 +17,6 @@ export interface ProductInput {
 export interface ProcessItemDeps {
   readonly imageProviders: readonly ImageProvider[];
   readonly text: TextProvider;
-  readonly compositor: Compositor;
   readonly store: ImageStore;
   readonly policy: RetryPolicy;
   readonly chaos?: boolean;
@@ -43,26 +35,21 @@ export async function processItem(
   deps: ProcessItemDeps,
 ): Promise<ItemResult> {
   const generated = await generateImage(input, style, deps);
-  const copy = await execute(
+  const post = await execute(
     [
-      asProvider('openrouter copy', (signal) =>
-        deps.text.copy({ product: input.product, style, signal }),
+      asProvider('openrouter post', (signal) =>
+        deps.text.writePost({ product: input.product, style, signal }),
       ),
     ],
     deps.policy,
   );
-  // Bound the composite + store stage with the same policy timeout, so a wedged
-  // sharp render or disk write can't leave the item (and the job) hanging.
-  const posts = await execute(
-    [
-      asProvider('composite+store', async () => {
-        const formats = await deps.compositor.render(generated.image, copy);
-        return storePosts(input.id, formats, deps.store);
-      }),
-    ],
+  // Bound the store write with the same policy timeout, so a wedged disk write
+  // can't leave the item (and the job) hanging.
+  const stored = await execute(
+    [asProvider('store', () => deps.store.save(input.id, generated.image, 'image/png'))],
     deps.policy,
   );
-  return { id: input.id, providerUsed: generated.providerUsed, copy, posts };
+  return { id: input.id, providerUsed: generated.providerUsed, imageUrl: stored.url, post };
 }
 
 interface Generated {
@@ -125,18 +112,4 @@ async function gateOnQuality(
       retryable: true,
     });
   }
-}
-
-function storePosts(
-  id: string,
-  formats: Record<FormatId, Buffer>,
-  store: ImageStore,
-): Promise<PostResult[]> {
-  return Promise.all(
-    FORMAT_IDS.map(async (format): Promise<PostResult> => {
-      const stored = await store.save(`${id}-${format}`, formats[format], 'image/png');
-      const { width, height } = formatSpec(format);
-      return { format, url: stored.url, width, height };
-    }),
-  );
 }

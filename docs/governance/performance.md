@@ -16,9 +16,8 @@ The workload is I/O-bound (provider calls) and image-CPU-bound (compositing).
 
 ## Image work
 
-- `sharp` handles resize/composite; it's libvips-backed and streams efficiently.
-- We generate the base image once per product, then derive the three formats from
-  it — no redundant generation calls.
+- Exactly one image-generation call per product (plus the shared style read); the
+  result is stored as-is, with no compositing or resize step in the request path.
 
 ## Cost
 

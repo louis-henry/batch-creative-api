@@ -5,8 +5,8 @@ We test to gain confidence in **behavior**, not to chase a coverage number.
 ## What we test
 
 - **Logic-bearing units**: the resilience executor (retries, failover, timeouts),
-  batch aggregation (partial success), backoff/retry policy, format/layout math,
-  style-spec extraction, the compositor's output dimensions.
+  batch aggregation (partial success), backoff/retry policy, style-spec extraction,
+  and structured post/result schema validation.
 - **Boundaries**: request validation, error mapping.
 
 ## What we don't test

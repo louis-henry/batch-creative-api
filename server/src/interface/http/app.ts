@@ -27,7 +27,8 @@ const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
-  app.use('*', secureHeaders());
+  // crossOrigin RP so the browser can load generated images from this API origin.
+  app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
   app.use('*', cors(deps.corsOrigin !== undefined ? { origin: deps.corsOrigin } : undefined));
 
   app.get('/health', (c) => c.json({ ok: true }));

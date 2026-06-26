@@ -1,18 +1,68 @@
 @import 'tailwindcss';
 
-@theme {
-  --color-background: oklch(0.165 0.012 274);
-  --color-surface: oklch(0.213 0.016 274);
-  --color-surface-2: oklch(0.255 0.018 274);
-  --color-border: oklch(0.42 0.02 274);
-  --color-foreground: oklch(0.96 0.005 274);
-  --color-muted: oklch(0.68 0.02 274);
-  --color-primary: oklch(0.55 0.21 272);
-  --color-primary-foreground: oklch(0.99 0 0);
-  --color-success: oklch(0.72 0.16 155);
-  --color-danger: oklch(0.66 0.2 18);
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --radius-xl: 1rem;
+@theme {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-fg);
+  /* Accent tuned for sufficient text/focus contrast on the current surface. */
+  --color-accent-strong: var(--accent-strong);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-xl: 1.25rem;
+
+  --animate-fade-in: fade-in 150ms ease-out;
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Light theme (default) */
+:root {
+  --bg: oklch(0.985 0.003 265);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.965 0.004 265);
+  --border: oklch(0.9 0.005 265);
+  --fg: oklch(0.23 0.012 265);
+  --muted: oklch(0.5 0.012 265);
+  --accent: oklch(0.8 0.18 128);
+  --accent-fg: oklch(0.26 0.06 128);
+  --accent-strong: oklch(0.52 0.15 128);
+  --success: oklch(0.6 0.14 150);
+  --danger: oklch(0.57 0.18 25);
+}
+
+/* Dark theme */
+.dark {
+  --bg: oklch(0.17 0.004 265);
+  --surface: oklch(0.205 0.005 265);
+  --surface-2: oklch(0.255 0.006 265);
+  --border: oklch(0.305 0.007 265);
+  --fg: oklch(0.96 0.004 265);
+  --muted: oklch(0.66 0.009 265);
+  --accent: oklch(0.88 0.19 128);
+  --accent-fg: oklch(0.24 0.06 128);
+  --accent-strong: oklch(0.88 0.19 128);
+  --success: oklch(0.82 0.16 150);
+  --danger: oklch(0.68 0.18 25);
 }
 
 html,
@@ -23,21 +73,20 @@ body,
 
 body {
   margin: 0;
-  background:
-    radial-gradient(60rem 60rem at 80% -10%, oklch(0.62 0.2 272 / 0.18), transparent 60%),
-    radial-gradient(50rem 50rem at -10% 110%, oklch(0.62 0.16 200 / 0.12), transparent 55%),
-    var(--color-background);
+  background: var(--color-background);
   color: var(--color-foreground);
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Subtle accent glow, used behind the hero only. */
+.glow {
+  background: radial-gradient(
+    40rem 30rem at 50% -10%,
+    color-mix(in oklch, var(--accent) 22%, transparent),
+    transparent 70%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {

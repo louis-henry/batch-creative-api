@@ -19,7 +19,7 @@ Ports & adapters. Dependencies point inward:
 ```
 domain  →  (nothing)          pure logic, no I/O, fully unit-tested
 application → domain + ports   orchestration; depends on interfaces, not vendors
-adapters → implement ports     provider clients, sharp, storage, jobs
+adapters → implement ports     provider clients, storage, jobs
 interface → wires it together  Hono HTTP layer (thin)
 ```
 

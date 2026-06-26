@@ -15,23 +15,25 @@ const respondWith =
     Promise.resolve(new Response(body, { status }));
 
 describe('openRouterTextProvider', () => {
-  it('requests structured copy with the image and returns parsed Copy', async () => {
+  it('requests a structured post with the image and returns a parsed SocialPost', async () => {
     let captured: RequestInit | undefined;
     const fetchFn = (_url: string, init: RequestInit): Promise<Response> => {
       captured = init;
       return Promise.resolve(
-        new Response(chatBody(JSON.stringify({ headline: 'Hi', subtext: 'there', cta: 'Shop' }))),
+        new Response(
+          chatBody(JSON.stringify({ title: 'Hi', caption: 'there', hashtags: ['#shop'] })),
+        ),
       );
     };
 
     const sig = signal();
-    const copy = await createOpenRouterTextProvider({ apiKey: 'k', fetchFn }).copy({
+    const post = await createOpenRouterTextProvider({ apiKey: 'k', fetchFn }).writePost({
       product: Buffer.from('P'),
       style,
       signal: sig,
     });
 
-    expect(copy).toEqual({ headline: 'Hi', subtext: 'there', cta: 'Shop' });
+    expect(post).toEqual({ title: 'Hi', caption: 'there', hashtags: ['#shop'] });
     expect(captured?.signal).toBe(sig);
     expect((captured?.headers as Record<string, string>).Authorization).toBe('Bearer k');
     const body = JSON.parse(String(captured?.body)) as {
@@ -48,7 +50,7 @@ describe('openRouterTextProvider', () => {
       fetchFn: respondWith(JSON.stringify({ choices: [] })),
     });
     const error = await provider
-      .copy({ product: Buffer.from('P'), style, signal: signal() })
+      .writePost({ product: Buffer.from('P'), style, signal: signal() })
       .catch((e: unknown) => e);
     expect((error as ProviderError).retryable).toBe(true);
   });
@@ -64,15 +66,15 @@ describe('openRouterTextProvider', () => {
     expect((error as ProviderError).retryable).toBe(true);
   });
 
-  it('rejects copy that violates the schema as retryable', async () => {
+  it('rejects a post that violates the schema as retryable', async () => {
     const provider = createOpenRouterTextProvider({
       apiKey: 'k',
       fetchFn: respondWith(
-        chatBody(JSON.stringify({ headline: 'x'.repeat(61), subtext: '', cta: 'go' })),
+        chatBody(JSON.stringify({ title: 'x'.repeat(81), caption: 'c', hashtags: [] })),
       ),
     });
     const error = await provider
-      .copy({ product: Buffer.from('P'), style, signal: signal() })
+      .writePost({ product: Buffer.from('P'), style, signal: signal() })
       .catch((e: unknown) => e);
     expect((error as ProviderError).retryable).toBe(true);
   });
@@ -93,7 +95,7 @@ describe('openRouterTextProvider', () => {
       fetchFn: respondWith('rate', 429),
     });
     const error = await provider
-      .copy({ product: Buffer.from('P'), style, signal: signal() })
+      .writePost({ product: Buffer.from('P'), style, signal: signal() })
       .catch((e: unknown) => e);
     expect((error as ProviderError).retryable).toBe(true);
   });

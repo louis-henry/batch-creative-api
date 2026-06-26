@@ -29,4 +29,14 @@ describe('loadEnv', () => {
   it('rejects a malformed PUBLIC_BASE_URL', () => {
     expect(() => loadEnv({ ...keys, PUBLIC_BASE_URL: 'not-a-url' })).toThrow(/PUBLIC_BASE_URL/);
   });
+
+  it('accepts a single image provider (OpenAI only, no Gemini)', () => {
+    const env = loadEnv({ OPENROUTER_API_KEY: 'or', OPENAI_API_KEY: 'o' });
+    expect(env.OPENAI_API_KEY).toBe('o');
+    expect(env.GEMINI_API_KEY).toBeUndefined();
+  });
+
+  it('requires at least one image provider key', () => {
+    expect(() => loadEnv({ OPENROUTER_API_KEY: 'or' })).toThrow(/GEMINI_API_KEY/);
+  });
 });
