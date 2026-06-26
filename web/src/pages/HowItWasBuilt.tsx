@@ -163,7 +163,7 @@ const CATCHES: [string, string][] = [
   ],
   [
     'An unbounded request body',
-    'A denial-of-service vector, closed with a body limit before any bytes get buffered.',
+    'A denial-of-service vector, closed with a request body size limit.',
   ],
 ];
 
@@ -340,7 +340,7 @@ export function HowItWasBuilt() {
         <div className="mt-6 border-t border-border pt-5">
           <div className="flex flex-wrap gap-x-10 gap-y-3">
             {[
-              ['Total time', '8–10 hrs'],
+              ['Total time', '~8 hrs'],
               ['Hands-on', '~4 hrs'],
               ['AI working', '~8 hrs'],
             ].map(([label, value]) => (
@@ -351,8 +351,9 @@ export function HowItWasBuilt() {
             ))}
           </div>
           <p className="mt-2 text-xs text-muted">
-            Hands-on (thinking, reviewing, directing) and AI time overlap; much of it ran in
-            parallel, which is why they sum past the total.
+            About a focused half-day of hands-on time (thinking, reviewing, directing). The agent
+            worked alongside for roughly the same span, mostly in parallel, which is where the
+            breadth came from.
           </p>
         </div>
       </div>

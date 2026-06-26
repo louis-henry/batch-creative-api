@@ -16,9 +16,7 @@ export function createOpenAiImageProvider(deps: {
   const fetchFn = deps.fetchFn ?? fetch;
   return {
     name: 'openai',
-    // The edits endpoint conditions only on the product image; the reference
-    // style is already encoded in StyleSpec and carried via the prompt.
-    async generate({ product, style, signal }: ImageRequest): Promise<Buffer> {
+    async generate({ product, refs, style, signal }: ImageRequest): Promise<Buffer> {
       const form = new FormData();
       form.append('model', 'gpt-image-1');
       form.append('prompt', buildImagePrompt(style));
@@ -26,11 +24,13 @@ export function createOpenAiImageProvider(deps: {
       // medium).
       form.append('size', '1024x1024');
       form.append('quality', 'medium');
-      form.append(
-        'image',
-        new Blob([new Uint8Array(product)], { type: 'image/png' }),
-        'product.png',
-      );
+      // gpt-image-1 edits accept multiple inputs: the product is the image being
+      // edited, the references guide the scene and palette, so the failover path
+      // holds the same look as the Gemini primary instead of degrading to text only.
+      const addImage = (buf: Buffer, name: string): void =>
+        form.append('image[]', new Blob([new Uint8Array(buf)], { type: 'image/png' }), name);
+      addImage(product, 'product.png');
+      refs.forEach((ref, i) => addImage(ref, `ref-${String(i)}.png`));
 
       const { status, text } = await fetchText(
         'openai',

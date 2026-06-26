@@ -20,8 +20,8 @@ hashtags), streaming progress back to the UI — continuing past any single fail
 ## What it produces
 
 One reference sets the mood; every product is dropped into **that same world**,
-with a caption written to match. The consistency is derived once and applied across
-the whole batch — here, three unrelated products from a single reference:
+with a caption in the same voice. The consistency is derived once and applied across
+the whole batch, here across three unrelated products from a single reference:
 
 **Reference** — the mood to match:
 
@@ -35,7 +35,7 @@ the whole batch — here, three unrelated products from a single reference:
 |                                  `#CyberpunkDecor` `#LumantisLighting`                                  |                                      `#CyberpunkTech` `#FuturePhone`                                      |                                          `#CyberpunkHair` `#VeloraHaircare`                                          |
 
 Same dusk skyline, same warm-to-deep-blue palette, same ledge framing — three
-different products, one batch. Every product runs through retry + multi-provider
+different products, one batch. Every product runs through retry and image-provider
 failover; flip **Chaos mode** in the app to watch the primary fail over to the
 secondary, live.
 
@@ -55,10 +55,14 @@ per product: image = execute([gemini, openai])   retry + failover (+ optional ju
 The reliability layer is a single generic **resilience executor** wrapping every
 provider call: exponential backoff + jitter, per-attempt `AbortController`
 timeout, failover to the next provider, and a structured `AggregateError` if all
-fail. A **chaos toggle** forces the primary image provider to fail so failover is
-observable live in the UI. Visual consistency comes from a **style spec** derived
-once from the references and applied to every product, with a stable seed passed
-to providers that support it (Gemini).
+fail. Image generation fails over across **two providers** (Gemini, then OpenAI),
+each call carrying the product and the reference images; the text calls (style,
+copy, judge) run through OpenRouter, which adds model-level fallback behind one
+key. A **chaos toggle** forces the primary image provider to fail so failover is
+observable live in the UI. Visual consistency comes from a **style spec** (a
+shared descriptor and palette) read once from the references and sent with every
+product, plus the reference images on each image call; a stable seed adds
+reproducibility on providers that support it (Gemini).
 
 ## Quickstart (local)
 
