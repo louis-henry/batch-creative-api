@@ -30,7 +30,9 @@ export function buildStyleSpec(input: StyleSpecInput): StyleSpec {
 
 /**
  * FNV-1a 32-bit hash: the same descriptor always yields the same seed, so a
- * batch is reproducible without persisting anything.
+ * batch is reproducible without persisting anything. Masked to a non-negative
+ * signed int32 because providers (Gemini's `generationConfig.seed`) type it as
+ * INT32 and reject anything above 2^31-1.
  */
 function stableSeed(value: string): number {
   let hash = 0x811c9dc5;
@@ -38,5 +40,5 @@ function stableSeed(value: string): number {
     hash ^= value.charCodeAt(i);
     hash = Math.imul(hash, 0x01000193);
   }
-  return hash >>> 0;
+  return hash & 0x7fffffff;
 }
