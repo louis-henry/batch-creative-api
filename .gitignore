@@ -27,3 +27,6 @@ output/
 
 # Test / coverage
 coverage/
+
+# Playwright artifacts
+.playwright-mcp/

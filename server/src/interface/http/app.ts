@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
 import { batchOptionsSchema } from '@app/contracts';
 import type { JobStore } from '../../application/ports/jobStore.js';
@@ -15,6 +16,7 @@ export type StartBatch = (
 export interface AppDeps {
   jobStore: JobStore;
   startBatch: StartBatch;
+  corsOrigin?: string;
 }
 
 const MAX_PRODUCTS = 20;
@@ -24,6 +26,7 @@ const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
+  app.use('*', cors(deps.corsOrigin !== undefined ? { origin: deps.corsOrigin } : undefined));
 
   app.post(
     '/batch',
