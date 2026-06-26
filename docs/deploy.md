@@ -29,7 +29,8 @@ batch's execution time, which is why the API isn't on Vercel (see
 ## Smoke test
 
 ```bash
-curl -F products=@samples/product-bottle.png -F refs=@samples/reference-warm.png https://<api>/batch
+curl -F products=@web/src/assets/imgs/product-lamp.jpg \
+     -F refs=@web/src/assets/imgs/context-forest.jpg https://<api>/batch
 # → { "jobId": "..." }
 curl https://<api>/batch/<jobId>
 # → { status, succeeded[], failed[] }
