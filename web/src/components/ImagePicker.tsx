@@ -32,12 +32,15 @@ export function ImagePicker({
     .filter(({ f }) => !sampleNames.has(f.name));
   const full = files.length >= max;
 
+  // Identity of the upload set only — so toggling a sample (which changes `files`
+  // but not the uploads) doesn't needlessly revoke/recreate the upload blob URLs.
+  const uploadKey = uploads.map(({ f }) => `${f.name}:${String(f.size)}`).join('|');
   const [uploadUrls, setUploadUrls] = useState<string[]>([]);
   useEffect(() => {
     const next = uploads.map(({ f }) => URL.createObjectURL(f));
     setUploadUrls(next);
     return () => next.forEach((u) => URL.revokeObjectURL(u));
-  }, [files]);
+  }, [uploadKey]);
 
   return (
     <div className="flex flex-wrap gap-3">
@@ -53,7 +56,7 @@ export function ImagePicker({
             disabled={disabled}
             onClick={() => onToggleSample(s.url)}
             className={cn(
-              'group relative h-20 w-20 overflow-hidden rounded-xl border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'group relative h-20 w-20 overflow-hidden rounded-xl border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong',
               selected
                 ? 'border-primary ring-2 ring-primary/50'
                 : 'border-border opacity-50 hover:border-primary/60 hover:opacity-100',
@@ -86,7 +89,7 @@ export function ImagePicker({
             type="button"
             aria-label="Remove uploaded image"
             onClick={() => onRemoveFile(index)}
-            className="absolute inset-0 flex items-center justify-center bg-background/55 text-foreground opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none"
+            className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/55 text-foreground opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-strong"
           >
             <X size={16} weight="bold" />
           </button>

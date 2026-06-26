@@ -15,8 +15,9 @@ const envSchema = z
     JUDGE_THRESHOLD: z.coerce.number().min(0).max(1).optional(),
   })
   .refine((e) => e.GEMINI_API_KEY !== undefined || e.OPENAI_API_KEY !== undefined, {
+    // No path: this is a cross-field rule, so surface the instruction itself rather
+    // than blaming one key (OpenAI-only is valid).
     message: 'set GEMINI_API_KEY and/or OPENAI_API_KEY',
-    path: ['GEMINI_API_KEY'],
   });
 
 export type Env = z.infer<typeof envSchema>;
@@ -27,7 +28,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const cleaned = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== ''));
   const result = envSchema.safeParse(cleaned);
   if (!result.success) {
-    const fields = result.error.issues.map((i) => i.path.join('.')).join(', ');
+    // Field issues report the field name; cross-field (path-less) issues report
+    // their message, so a missing-image-provider boot is self-explanatory.
+    const fields = result.error.issues.map((i) => i.path.join('.') || i.message).join(', ');
     throw new Error(`Invalid environment configuration: ${fields}`);
   }
   return result.data;

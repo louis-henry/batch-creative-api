@@ -5,8 +5,8 @@ import { CircleNotch } from '@phosphor-icons/react';
 const MESSAGES = [
   'Reading the reference style…',
   'Placing your product in the scene…',
-  'Writing the copy…',
-  'Composing square, story, and banner…',
+  'Writing the caption & hashtags…',
+  'Polishing the post…',
   'Almost there…',
 ];
 

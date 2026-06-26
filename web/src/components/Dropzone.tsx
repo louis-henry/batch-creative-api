@@ -53,7 +53,7 @@ export function Dropzone({ label, hint, onFiles, compact = false }: DropzoneProp
           onClick={open}
           {...dragProps}
           className={cn(
-            'flex h-20 w-20 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border text-muted transition hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+            'flex h-20 w-20 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border text-muted transition hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong',
             over && 'border-primary bg-primary/10 text-foreground',
           )}
         >
@@ -73,7 +73,7 @@ export function Dropzone({ label, hint, onFiles, compact = false }: DropzoneProp
         onClick={open}
         {...dragProps}
         className={cn(
-          'group flex w-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-surface/50 px-6 py-12 text-center transition hover:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+          'group flex w-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-surface/50 px-6 py-12 text-center transition hover:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong',
           over && 'border-primary bg-primary/10',
         )}
       >

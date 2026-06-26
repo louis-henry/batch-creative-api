@@ -20,7 +20,14 @@ const POLICY: RetryPolicy = { maxRetries: 2, baseMs: 300, maxMs: 8000, attemptTi
 const env = loadEnv();
 const logger = pino({
   redact: {
-    paths: ['*.headers.authorization', '*.headers["x-goog-api-key"]', 'err.cause'],
+    paths: [
+      '*.headers.authorization',
+      '*.headers["x-goog-api-key"]',
+      'err.cause',
+      // Failover throws AggregateError; scrub each child cause too (belt-and-braces:
+      // provider bodies are already secret-scrubbed at the source).
+      'err.errors[*].cause',
+    ],
     censor: '[redacted]',
   },
 });

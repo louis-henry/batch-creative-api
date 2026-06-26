@@ -11,6 +11,8 @@
   --color-muted: var(--muted);
   --color-primary: var(--accent);
   --color-primary-foreground: var(--accent-fg);
+  /* Accent tuned for sufficient text/focus contrast on the current surface. */
+  --color-accent-strong: var(--accent-strong);
   --color-success: var(--success);
   --color-danger: var(--danger);
 
@@ -43,6 +45,7 @@
   --muted: oklch(0.5 0.012 265);
   --accent: oklch(0.8 0.18 128);
   --accent-fg: oklch(0.26 0.06 128);
+  --accent-strong: oklch(0.52 0.15 128);
   --success: oklch(0.6 0.14 150);
   --danger: oklch(0.57 0.18 25);
 }
@@ -57,6 +60,7 @@
   --muted: oklch(0.66 0.009 265);
   --accent: oklch(0.88 0.19 128);
   --accent-fg: oklch(0.24 0.06 128);
+  --accent-strong: oklch(0.88 0.19 128);
   --success: oklch(0.82 0.16 150);
   --danger: oklch(0.68 0.18 25);
 }

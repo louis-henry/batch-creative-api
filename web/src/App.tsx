@@ -135,7 +135,7 @@ export function App() {
           <main className="relative mx-auto max-w-2xl px-5 pb-16">
             <div className="py-8 text-center sm:py-10">
               <h1 className="font-display text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl">
-                Your product, <span className="text-primary">styled into a set.</span>
+                Your product, <span className="text-accent-strong">styled into a set.</span>
               </h1>
               <p className="mx-auto mt-3 max-w-md text-muted">
                 Pick or upload a product and a reference mood — get a ready-to-post image with a
