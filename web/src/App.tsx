@@ -21,7 +21,9 @@ export function App() {
 
   const finished = job?.status === 'done';
   const running = (s.jobId !== null && !finished && !isError) || submitting;
-  const items = deriveItems(s.products.length, job);
+  // Once submitted, derive against the snapshot count so editing the queue
+  // mid-run can't invent phantom pending items.
+  const items = deriveItems(s.jobId ? s.submittedCount : s.products.length, job);
   const results = items.flatMap((i) => (i.status === 'done' ? [i.result] : []));
   const failures = items.flatMap((i) => (i.status === 'failed' ? [i] : []));
   const canRun = s.products.length > 0 && s.refs.length >= 1;
@@ -41,7 +43,7 @@ export function App() {
     setSubmitting(true);
     createBatch(s.products, s.refs, { concurrency: s.concurrency, chaos: s.chaos })
       .then((id) => {
-        s.setJobId(id);
+        s.submit(id);
         toast('Batch started', { description: `${String(s.products.length)} product image(s)` });
       })
       .catch((e: unknown) => {
@@ -108,6 +110,7 @@ export function App() {
           </Card>
 
           <div className="space-y-6">
+            <h2 className="sr-only">Generated posts</h2>
             {!s.jobId && (
               <Card className="flex min-h-64 flex-col items-center justify-center gap-2 p-10 text-center">
                 <Sparkles aria-hidden="true" className="h-6 w-6 text-muted" />
@@ -118,7 +121,7 @@ export function App() {
             )}
 
             {isError && (
-              <Card className="flex items-center gap-2 p-4 text-sm text-danger">
+              <Card role="alert" className="flex items-center gap-2 p-4 text-sm text-danger">
                 <WifiOff aria-hidden="true" className="h-4 w-4" />
                 Lost connection to the job. Check the API is running.
               </Card>
