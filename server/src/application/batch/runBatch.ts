@@ -11,6 +11,16 @@ export interface RunBatchDeps extends ProcessItemDeps {
   readonly concurrency: number;
 }
 
+// Summarizes the constituent causes so the failure panel shows real reasons
+// (HTTP status, timeout, schema) instead of a bare "all N providers failed".
+function reasonOf(error: unknown): string {
+  if (error instanceof AggregateError) {
+    const messages = error.errors.map((e) => (e instanceof Error ? e.message : String(e)));
+    return [...new Set(messages)].join('; ') || error.message;
+  }
+  return error instanceof Error ? error.message : 'unknown error';
+}
+
 export async function runBatch(
   jobId: string,
   products: readonly ProductInput[],
@@ -35,6 +45,9 @@ async function runOne(
   try {
     deps.jobStore.addSuccess(jobId, await processItem(product, style, deps));
   } catch (error) {
+    // Full error (with causes/status) logged server-side; client reason stays
+    // message-only (no `cause`) per docs/governance/security.md.
+    deps.logger?.warn({ jobId, id: product.id, err: error }, 'batch item failed');
     deps.jobStore.addFailure(jobId, toFailure(product.id, error));
   }
 }
@@ -52,13 +65,13 @@ async function resolveStyle(
       deps.policy,
     );
   } catch (error) {
+    deps.logger?.warn({ jobId, err: error }, 'style read failed; failing batch');
     for (const product of products) deps.jobStore.addFailure(jobId, toFailure(product.id, error));
     deps.jobStore.setStatus(jobId, 'done');
     return undefined;
   }
 }
 
-// reason is derived from error.message only, never `cause` (see docs/governance/security.md).
 function toFailure(id: string, error: unknown): ItemFailure {
-  return { id, reason: error instanceof Error ? error.message : 'unknown error' };
+  return { id, reason: reasonOf(error) };
 }

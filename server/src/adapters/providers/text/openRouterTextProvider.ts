@@ -127,6 +127,9 @@ function message(args: {
   const imageParts = images.map((img) => ({ type: 'image_url', image_url: { url: dataUrl(img) } }));
   return {
     model,
+    // Only route to providers that honor response_format, so we don't get prose
+    // back from a non-capable variant.
+    provider: { require_parameters: true },
     messages: [{ role: 'user', content: [{ type: 'text', text }, ...imageParts] }],
     response_format: {
       type: 'json_schema',
@@ -135,8 +138,21 @@ function message(args: {
   };
 }
 
+// Strip a ```json fence if a model wraps its JSON despite the schema request.
+function stripFences(content: string): string {
+  const trimmed = content.trim();
+  if (!trimmed.startsWith('```')) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/, '')
+    .trim();
+}
+
 function parseStyle(content: string): StyleAnalysis {
-  const body = parseJson<{ descriptor?: unknown; palette?: unknown }>('openrouter style', content);
+  const body = parseJson<{ descriptor?: unknown; palette?: unknown }>(
+    'openrouter style',
+    stripFences(content),
+  );
   const palette = Array.isArray(body.palette)
     ? body.palette.filter((c) => typeof c === 'string')
     : [];
@@ -147,7 +163,7 @@ function parseStyle(content: string): StyleAnalysis {
 }
 
 function parseCopy(content: string): Copy {
-  const result = copySchema.safeParse(parseJson<unknown>('openrouter copy', content));
+  const result = copySchema.safeParse(parseJson<unknown>('openrouter copy', stripFences(content)));
   if (!result.success) {
     throw new ProviderError('openrouter copy did not match the schema', { retryable: true });
   }
@@ -155,7 +171,7 @@ function parseCopy(content: string): Copy {
 }
 
 function parseJudge(content: string): JudgeResult {
-  const body = parseJson<{ score?: unknown }>('openrouter judge', content);
+  const body = parseJson<{ score?: unknown }>('openrouter judge', stripFences(content));
   if (typeof body.score !== 'number' || Number.isNaN(body.score)) {
     throw new ProviderError('openrouter judge returned no score', { retryable: true });
   }

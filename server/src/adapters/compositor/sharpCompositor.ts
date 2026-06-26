@@ -96,5 +96,6 @@ const XML_ENTITIES: Record<string, string> = {
 };
 
 function escapeXml(value: string): string {
-  return value.replace(/[<>&'"]/g, (c) => XML_ENTITIES[c] ?? c);
+  // Strip control chars XML forbids (would crash librsvg), then escape entities.
+  return value.replace(/\p{Cc}/gu, '').replace(/[<>&'"]/g, (c) => XML_ENTITIES[c] ?? c);
 }
