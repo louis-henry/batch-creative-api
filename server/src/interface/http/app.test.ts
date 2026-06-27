@@ -79,32 +79,55 @@ describe('createApp POST /batch', () => {
     expect((await reject(form)).status).toBe(400);
   });
 
-  it('rate-limits the paid endpoint per IP when limits are configured', async () => {
-    const app = createApp({
+  const valid = (): FormData => {
+    const f = new FormData();
+    f.append('products', pngFile('p.png'));
+    f.append('refs', pngFile('r.png'));
+    return f;
+  };
+  const guarded = (perIp: number, global: number): ReturnType<typeof createApp> =>
+    createApp({
       jobStore: createInMemoryJobStore(),
       startBatch: noop,
       rateLimits: {
-        perIp: { limit: 2, windowMs: 60_000 },
-        global: { limit: 100, windowMs: 60_000 },
+        perIp: { limit: perIp, windowMs: 60_000 },
+        global: { limit: global, windowMs: 60_000 },
       },
     });
-    const valid = (): FormData => {
-      const f = new FormData();
-      f.append('products', pngFile('p.png'));
-      f.append('refs', pngFile('r.png'));
-      return f;
-    };
-    const send = (): Promise<Response> =>
-      Promise.resolve(
-        app.request('/batch', {
-          method: 'POST',
-          body: valid(),
-          headers: { 'x-forwarded-for': 'client-a' },
-        }),
-      );
-    expect((await send()).status).toBe(202);
-    expect((await send()).status).toBe(202);
-    expect((await send()).status).toBe(429);
+  const fromIp = (app: ReturnType<typeof createApp>, ip: string): Promise<Response> =>
+    Promise.resolve(
+      app.request('/batch', { method: 'POST', body: valid(), headers: { 'x-forwarded-for': ip } }),
+    );
+
+  it('rate-limits the paid endpoint per IP when limits are configured', async () => {
+    const app = guarded(2, 100);
+    expect((await fromIp(app, 'client-a')).status).toBe(202);
+    expect((await fromIp(app, 'client-a')).status).toBe(202);
+    expect((await fromIp(app, 'client-a')).status).toBe(429);
+  });
+
+  it('enforces the global cap across different IPs', async () => {
+    const app = guarded(10, 1);
+    expect((await fromIp(app, 'client-a')).status).toBe(202);
+    expect((await fromIp(app, 'client-b')).status).toBe(429); // global cap, not per-IP
+  });
+
+  it('an IP over its own cap does not consume the global allowance', async () => {
+    const app = guarded(1, 5);
+    expect((await fromIp(app, 'a')).status).toBe(202);
+    expect((await fromIp(app, 'a')).status).toBe(429); // over per-IP; must not burn global
+    expect((await fromIp(app, 'a')).status).toBe(429);
+    expect((await fromIp(app, 'b')).status).toBe(202); // proves a's rejects left global room
+  });
+
+  it('honours a custom maxProducts cap', async () => {
+    const app = createApp({ jobStore: createInMemoryJobStore(), startBatch: noop, maxProducts: 2 });
+    const form = new FormData();
+    ['a', 'b', 'c'].forEach((n) => form.append('products', pngFile(`${n}.png`)));
+    form.append('refs', pngFile('r.png'));
+    expect(
+      (await Promise.resolve(app.request('/batch', { method: 'POST', body: form }))).status,
+    ).toBe(400);
   });
 });
 

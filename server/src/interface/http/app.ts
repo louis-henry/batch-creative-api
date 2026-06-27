@@ -28,12 +28,14 @@ export interface AppDeps {
 
 const MAX_PRODUCTS = 20;
 const MAX_BYTES = 10 * 1024 * 1024;
-const MAX_BODY = (MAX_PRODUCTS + 2) * MAX_BYTES;
 const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
   const maxProducts = deps.maxProducts ?? MAX_PRODUCTS;
+  // Body limit tracks the product cap so lowering MAX_PRODUCTS also tightens the
+  // bytes buffered before validation rejects an oversized batch.
+  const maxBody = (maxProducts + 2) * MAX_BYTES;
   const guard = deps.rateLimits ? createRateGuard() : undefined;
   // crossOrigin RP so the browser can load generated images from this API origin.
   app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
@@ -43,7 +45,7 @@ export function createApp(deps: AppDeps): Hono {
 
   app.post(
     '/batch',
-    bodyLimit({ maxSize: MAX_BODY, onError: (c) => c.json({ error: 'request too large' }, 413) }),
+    bodyLimit({ maxSize: maxBody, onError: (c) => c.json({ error: 'request too large' }, 413) }),
     async (c) => {
       // Basic spend guard: reject before parsing/work when the public limits are hit.
       const limited = rateLimited(c, deps.rateLimits, guard);
@@ -96,11 +98,16 @@ function rateLimited(
   guard: RateGuard | undefined,
 ): Response | undefined {
   if (!limits || !guard) return undefined;
-  const ip = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
-  if (!guard.allow('global', limits.global))
-    return c.json({ error: 'the demo is busy right now, please try again shortly' }, 429);
+  // Behind a single trusted proxy (Railway/Render) the client's real IP is the LAST
+  // X-Forwarded-For hop; the leftmost entries are client-supplied, so per-IP is
+  // best-effort. The global cap and the provider spend caps are the real bound.
+  const ip = c.req.header('x-forwarded-for')?.split(',').at(-1)?.trim() || 'local';
+  // Per-IP first: a request an IP is already over its own limit on must not consume
+  // a global slot, or one IP could exhaust the shared cap with rejected requests.
   if (!guard.allow(`ip:${ip}`, limits.perIp))
     return c.json({ error: 'too many requests, please slow down and try again soon' }, 429);
+  if (!guard.allow('global', limits.global))
+    return c.json({ error: 'the demo is busy right now, please try again shortly' }, 429);
   return undefined;
 }
 

@@ -41,8 +41,10 @@ Deliberately deferred for this take-home, with the production fix noted:
 - **Per-request body** is capped (`bodyLimit`) and uploads are validated for count,
   MIME, and size before buffering. The public deploy adds a **basic in-memory spend
   guard**: a per-IP and a global cap on `POST /batch` (rejecting with `429`) plus a
-  configurable per-request product limit (`MAX_PRODUCTS`). This is process-local and
-  best-effort, not Redis-backed; the hard backstop is the provider-side spend caps.
+  configurable per-request product limit (`MAX_PRODUCTS`). The per-IP cap keys on the
+  trailing `X-Forwarded-For` hop, so it is best-effort (the header is
+  client-influenceable); the global cap (a request count, not spend-weighted) and the
+  provider-side spend caps are the real bound. This is process-local, not Redis-backed.
   There is still **no auth** on the endpoint (it's public for assessors), and the
   in-memory rate state and the `.output` image directory have **no TTL/size
   eviction** — production would move the limiter and job state to a shared store and
