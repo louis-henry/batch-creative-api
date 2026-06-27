@@ -1,7 +1,7 @@
 import { backoffDelay, isRetryable, type RetryPolicy } from './policy.js';
 import { TimeoutError } from './errors.js';
 
-/** A named, abortable operation — typically one vendor's implementation. */
+/** A named, abortable operation, typically one vendor's implementation. */
 export interface Provider<T> {
   readonly name: string;
   run(signal: AbortSignal): Promise<T>;

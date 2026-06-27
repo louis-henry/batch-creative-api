@@ -1,10 +1,10 @@
 # Batch Creative Studio
 
-Turn **N product images + 1–2 reference images** into ready-to-post social posts —
+Turn **N product images + 1–2 reference images** into ready-to-post social posts,
 one styled, in-context product image per product paired with a generated
-**title, caption, and hashtags** — with the engineering that makes generative AI
-usable in production: **retries**, **multi-provider failover**, and a **consistent
-visual style** across the batch.
+**title, caption, and hashtags**, plus the reliability engineering around it:
+**retries**, **multi-provider failover**, and a **consistent visual style** across
+the batch.
 
 > Engineering take-home, Track 02 (Batch Creative API).
 
@@ -15,7 +15,7 @@ visual style** across the batch.
 Upload a set of product photos and a couple of reference images that set the mood.
 The app reads the style from the references once, then for every product it
 generates an in-context image and writes a matching social post (title, caption,
-hashtags), streaming progress back to the UI — continuing past any single failure.
+hashtags), streaming progress back to the UI, continuing past any single failure.
 
 ## What it produces
 
@@ -23,7 +23,7 @@ One reference sets the mood; every product is dropped into **that same world**,
 with a caption in the same voice. The consistency is derived once and applied across
 the whole batch, here across three unrelated products from a single reference:
 
-**Reference** — the mood to match:
+**Reference** (the mood to match):
 
 <img src="docs/assets/examples/reference-skytower.jpg" alt="Reference image: a neon city skyline at dusk" width="420" />
 
@@ -34,7 +34,7 @@ the whole batch, here across three unrelated products from a single reference:
 |                                   **Illuminate Your Cyberpunk Oasis**                                   |                                            **Future Unlocked**                                            |                                               **Level Up Your Locks**                                                |
 |                                  `#CyberpunkDecor` `#LumantisLighting`                                  |                                      `#CyberpunkTech` `#FuturePhone`                                      |                                          `#CyberpunkHair` `#VeloraHaircare`                                          |
 
-Same dusk skyline, same warm-to-deep-blue palette, same ledge framing — three
+Same dusk skyline, same warm-to-deep-blue palette, same ledge framing, three
 different products, one batch. Every product runs through retry and image-provider
 failover; flip **Chaos mode** in the app to watch the primary fail over to the
 secondary, live.
@@ -63,6 +63,10 @@ observable live in the UI. Visual consistency comes from a **style spec** (a
 shared descriptor and palette) read once from the references and sent with every
 product, plus the reference images on each image call; a stable seed adds
 reproducibility on providers that support it (Gemini).
+
+It deploys as a static web build on **Vercel** with the API on a long-lived host
+(**Railway**). The public `/batch` endpoint sits behind a basic spend guard
+(per-IP and global caps), so heavy use can temporarily pause new generations.
 
 ## Quickstart (local)
 
@@ -104,62 +108,66 @@ The web app reads `VITE_API_URL` (defaults to `http://localhost:8787`).
   OpenAI `gpt-image-1` (images, behind one port)
 - **Web:** Vite + React + Tailwind v4 + shadcn-style Radix components, Zustand,
   TanStack Query, Framer Motion, sonner
-- **Shared:** `@app/contracts` — Zod schemas used by both API and web
+- **Shared:** `@app/contracts`, Zod schemas used by both API and web
 
 ## Quality
 
-- `pnpm lint && pnpm typecheck && pnpm test && pnpm build` — all green; CI runs them on every PR.
-- **93 behaviour-focused tests** covering the resilience executor, batch
+- `pnpm lint && pnpm typecheck && pnpm test && pnpm build`, all green; CI runs them on every PR.
+- **101 behaviour-focused tests** covering the resilience executor, batch
   orchestration, providers (via injected `fetch`), and the HTTP layer.
-- Standards are **machine-enforced** (ESLint complexity caps, Husky, commitlint) —
+- Standards are **machine-enforced** (ESLint complexity caps, Husky, commitlint),
   see [`docs/governance/`](docs/governance).
 - Every phase shipped as a reviewed PR; see [the architecture decisions](docs/architecture/adr).
 
 ## How this was built
 
-The brief values _how you work with AI tools_ — so this was built with **Claude Code**
+The brief values _how you work with AI tools_, so this was built with **Claude Code**
 as a pair engineer, on an explicit harness rather than ad-hoc prompting:
 
 - **idea → design spec → reviewed plan → phased PRs**, each into a protected `main`.
-- **a parallel review committee** — every PR is reviewed by specialised subagents
+- **a parallel review committee**, every PR is reviewed by specialised subagents
   (correctness, architecture/types, security, accessibility), synthesised, and
   addressed before merge. It caught real defects a single pass misses: a
   timeout-classification race, a job-store aliasing bug, a missing Gemini
   `responseModalities` (would have broken _every_ image call), an AA contrast failure.
-- **live docs via MCP** — context7 for current provider/API shapes, playwright for
+- **live docs via MCP**, context7 for current provider/API shapes, playwright for
   browser QA of the end-to-end flow.
 
-The breadth below was cheap _because_ of that harness — which is the skill the role
-hires for. More in [`docs/governance/ai-usage.md`](docs/governance/ai-usage.md).
+The breadth below was cheap _because_ of that harness. More in
+[`docs/governance/ai-usage.md`](docs/governance/ai-usage.md).
 
 ## Scoping & judgment
 
-The brief asks for a focused half-day and grades judgment over polish — so effort went
+The brief asks for a focused half-day and grades judgment over polish, so effort went
 where the track grades (**good output, visible reliability, AI fluency**) and stayed
 deliberately thin everywhere else.
 
 **The core, kept small:** one generic resilience executor (retry + failover) wrapping
 every provider; one style spec applied across the whole batch for consistency; one
-social post per product. That's the graded surface — everything else serves it.
+social post per product. That's the graded surface, everything else serves it.
 
 **Deliberately cut** (named, not hidden):
 
-- **No queue/workers/DB/auth** — in-memory job store + polling is enough at this scale;
+- **No queue/workers/DB/auth**, in-memory job store + polling is enough at this scale;
   a real queue is the first production add.
-- **Basic spend guard, not full rate-limit infra** — the public deploy gets an
+- **Basic spend guard, not full rate-limit infra**: the public deploy gets an
   in-memory per-IP and global cap on the paid endpoint plus a per-request product
   limit; no Redis-backed limiter or auth (it's public for assessors). The
   provider-side spend caps are the hard backstop. See
   [`docs/governance/security.md`](docs/governance/security.md).
 - The **judge gate** is wired but off by default (cost); enable via `JUDGE_THRESHOLD`.
 
-The governance docs, ADRs, and tests are intentionally light scaffolding — cheap to
+The deployed **How it was built** page carries a fuller _Scoped out_ roadmap (durability,
+observability, finished failover, auth, abuse controls), each cut paired with its
+production fix.
+
+The governance docs, ADRs, and tests are intentionally light scaffolding, cheap to
 maintain with the AI harness above, there to keep the small core honest, not to polish
 infra the brief deprioritises.
 
 ## Deploying
 
-See [`docs/deploy.md`](docs/deploy.md) — API on Railway/Render (long-lived, for the
+See [`docs/deploy.md`](docs/deploy.md), API on Railway/Render (long-lived, for the
 async batch), web on Vercel (static), with the env wiring for both.
 
 ## Repository layout

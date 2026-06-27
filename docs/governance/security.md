@@ -15,7 +15,7 @@ Scope-appropriate for a take-home, but with production instincts.
 - Every request is validated with Zod at the `interface` layer before reaching
   application logic. Reject early with a typed `ValidationError`.
 - Validate the **shape and size** of uploaded images (count, byte limit, and a
-  best-effort MIME check — the declared `Content-Type` is client-supplied, so it's
+  best-effort MIME check, the declared `Content-Type` is client-supplied, so it's
   a hint; the image providers reject genuine non-images downstream).
 - Outbound provider responses are treated as untrusted: parse/validate before use.
 
@@ -29,7 +29,7 @@ Scope-appropriate for a take-home, but with production instincts.
 - Provider error bodies can echo a partial credential (e.g. some APIs include the
   offending key on a 401). The body is kept only server-side on `error.cause`,
   scrubbed of key-shaped tokens. Client-facing `ItemFailure.reason` must be derived
-  from `error.message` only — never from `cause` or a full error serialization.
+  from `error.message` only, never from `cause` or a full error serialization.
 - Response bodies are read fully into memory. The endpoints are hardcoded, trusted
   vendor APIs returning JSON envelopes, so this is acceptable; a body-size ceiling
   is the hardening step if untrusted endpoints are ever added.
@@ -47,7 +47,7 @@ Deliberately deferred for this take-home, with the production fix noted:
   provider-side spend caps are the real bound. This is process-local, not Redis-backed.
   There is still **no auth** on the endpoint (it's public for assessors), and the
   in-memory rate state and the `.output` image directory have **no TTL/size
-  eviction** — production would move the limiter and job state to a shared store and
+  eviction**, production would move the limiter and job state to a shared store and
   add eviction.
 - **`GET /batch/:id`** has no per-caller ownership binding; job ids are unguessable
   (UUIDv4), so enumeration is impractical, but an auth model would bind job to caller.

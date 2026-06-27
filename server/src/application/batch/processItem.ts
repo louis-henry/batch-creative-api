@@ -102,7 +102,7 @@ async function gateOnQuality(
   try {
     ({ score } = await deps.text.judge({ image, style, signal }));
   } catch (error) {
-    // Best-effort: a judge outage must not discard a good image — but make the
+    // Best-effort: a judge outage must not discard a good image, but make the
     // degraded gate observable rather than silently disabling quality control.
     deps.logger?.warn({ err: error }, 'judge call failed; passing quality gate');
     return;

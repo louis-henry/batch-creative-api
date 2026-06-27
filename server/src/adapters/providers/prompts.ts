@@ -14,7 +14,7 @@ export function buildPostPrompt(style: StyleSpec): string {
     `Write a social-media post (Instagram/Facebook style) for the product in this image, ` +
     `matching the visual style "${style.descriptor}". Return JSON with: a short punchy ` +
     `"title" (<=80 chars), an engaging "caption" of 1–2 sentences (<=400 chars), and ` +
-    `"hashtags" — an array of 3–6 relevant hashtags, each starting with #.`
+    `"hashtags", an array of 3–6 relevant hashtags, each starting with #.`
   );
 }
 

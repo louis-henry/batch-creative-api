@@ -12,7 +12,7 @@ We test to gain confidence in **behavior**, not to chase a coverage number.
 ## What we don't test
 
 - Framework glue and trivial pass-throughs.
-- Vendor SDK internals — we test our adapter's request shape and our handling of
+- Vendor SDK internals, we test our adapter's request shape and our handling of
   responses, not the provider.
 - Snapshot/boilerplate tests that assert nothing meaningful.
 

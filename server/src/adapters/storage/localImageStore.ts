@@ -15,7 +15,7 @@ const MAX_KEY_LENGTH = 64;
  * Writes images under a directory and serves them at `publicBaseUrl`. Keys are
  * sanitized to a single safe path segment, and a content hash is appended so
  * distinct content never collides into one file (and identical re-saves are
- * idempotent) — sanitization alone is many-to-one and would silently overwrite.
+ * idempotent); sanitization alone is many-to-one and would silently overwrite.
  */
 export function createLocalImageStore(deps: {
   directory: string;

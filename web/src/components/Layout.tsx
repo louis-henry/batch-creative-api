@@ -28,6 +28,14 @@ export function Layout() {
         <div ref={mainRef} tabIndex={-1} className="outline-none">
           <Outlet />
         </div>
+        <footer className="border-t border-border px-5 py-6 text-center sm:px-8">
+          <p className="text-sm text-muted">
+            Built by <span className="font-medium text-foreground">Louis H</span>
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Demo runs on a small provider budget; heavy use may briefly pause new generations.
+          </p>
+        </footer>
         <Toaster theme="system" position="top-right" richColors />
       </div>
     </MotionConfig>

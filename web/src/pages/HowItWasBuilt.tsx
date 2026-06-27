@@ -13,6 +13,7 @@ const SECTIONS = [
   { id: 'review', label: 'Review & catches' },
   { id: 'tools', label: 'Tools' },
   { id: 'decisions', label: 'Decisions & overrides' },
+  { id: 'scoped', label: 'Scoped out' },
 ] as const;
 
 const SECTION_IDS = SECTIONS.map((s) => s.id);
@@ -322,6 +323,53 @@ function DecisionsSection() {
   );
 }
 
+const SCOPED: [string, string][] = [
+  [
+    'Durability',
+    'The job store, the batch execution, and image storage are all in-process or on local disk, so a restart loses in-flight work. Production: Redis for job state, a durable queue with workers, and object storage behind a CDN.',
+  ],
+  [
+    'Reliability',
+    'Failover is image-only; the text calls (style, copy, judge) run through a single OpenRouter key. Production: a second text provider in the same failover chain, plus per-provider circuit breakers.',
+  ],
+  [
+    'Observability',
+    'No tracing, metrics, or error tracking. Production: OpenTelemetry across the provider calls, metrics for failover rate and cost per batch, and Sentry with alerting.',
+  ],
+  [
+    'Cost and abuse',
+    'The spend guard is in-memory and best-effort, and the only hard cap is provider-side. Production: a distributed rate limiter, per-user budget quotas, and content moderation on a public image endpoint.',
+  ],
+  [
+    'Auth',
+    'The endpoint is public and unauthenticated for the demo. Production: API keys or OAuth, with per-caller ownership binding on job reads.',
+  ],
+  [
+    'Testing and CI',
+    'No end-to-end tests or offline provider tests, and CI runs lint, types, tests, and build only. Production: Playwright e2e with coverage gates, recorded provider fixtures (MSW), and dependency, secret, and SAST scanning.',
+  ],
+];
+
+function ScopedSection() {
+  return (
+    <section>
+      <SectionHeading id="scoped" kicker="Roadmap" title="Scoped out" />
+      <p className="mb-5 max-w-2xl text-sm leading-relaxed text-muted">
+        The brief asked for a focused half-day, so I built the graded core and left the production
+        hardening for later. Each cut pairs with how I would close it.
+      </p>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {SCOPED.map(([t, d]) => (
+          <li key={t} className="rounded-2xl border border-border bg-surface/50 p-4">
+            <p className="text-sm font-semibold text-foreground">{t}</p>
+            <p className="mt-0.5 text-sm text-muted">{d}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function HowItWasBuilt() {
   return (
     <main className="relative mx-auto max-w-6xl px-5 pb-24">
@@ -365,6 +413,7 @@ export function HowItWasBuilt() {
           <ReviewSection />
           <ToolsSection />
           <DecisionsSection />
+          <ScopedSection />
         </div>
       </div>
     </main>

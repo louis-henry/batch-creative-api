@@ -10,7 +10,7 @@ Accepted
 
 Track 02 is a backend deliverable, but the demo UI is what evaluators see first.
 It needs to look polished, demonstrate the failover/consistency story, and stay
-maintainable — without becoming a second large project.
+maintainable, without becoming a second large project.
 
 ## Decision
 
@@ -24,7 +24,7 @@ current job id) and **TanStack Query** for server state (polling the job).
 ## Consequences
 
 - Clear separation of concerns: server truth lives in Query, client truth in
-  Zustand, and a pure `deriveItems` projection joins them at render time — no
+  Zustand, and a pure `deriveItems` projection joins them at render time, no
   duplicated source of truth.
 - Radix primitives provide correct roles, keyboard operation, and focus handling,
   so accessibility is mostly free; the app targets WCAG 2.1 AA.

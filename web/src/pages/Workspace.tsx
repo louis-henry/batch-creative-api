@@ -57,6 +57,8 @@ export function Workspace() {
   const results = items.filter((i) => i.status === 'done').length;
   const failures = items.filter((i) => i.status === 'failed').length;
   const canRun = s.products.length > 0 && s.refs.length >= 1;
+  const maxConcurrency = Math.max(1, s.products.length);
+  const effectiveConcurrency = Math.min(s.concurrency, maxConcurrency);
 
   const failedSuffix = failures > 0 ? `, ${String(failures)} failed` : '';
   const summary = s.jobId
@@ -71,7 +73,7 @@ export function Workspace() {
 
   const run = (): void => {
     setSubmitting(true);
-    createBatch(s.products, s.refs, { concurrency: s.concurrency, chaos: s.chaos })
+    createBatch(s.products, s.refs, { concurrency: effectiveConcurrency, chaos: s.chaos })
       .then((id) => {
         s.submit(id);
         toast('Batch started', { description: `${String(s.products.length)} product image(s)` });
@@ -99,7 +101,7 @@ export function Workspace() {
       .then((f) => {
         add([f]);
       })
-      .catch(() => undefined);
+      .catch(() => toast.error('Could not load that sample image'));
   };
 
   let phase: 'idle' | 'running' | 'done' = 'idle';
@@ -158,23 +160,28 @@ export function Workspace() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-medium">Concurrency</p>
-                    <p className="text-xs text-muted">
+                    <p id="concurrency-desc" className="text-xs text-muted">
                       How many products generate in parallel (speed, not quantity).
+                      {maxConcurrency === 1 && ' Add more products to raise this.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Slider
                       className="w-32"
                       min={1}
-                      max={16}
+                      max={maxConcurrency}
                       step={1}
-                      value={[s.concurrency]}
+                      value={[effectiveConcurrency]}
                       onValueChange={([v]) => {
                         s.setConcurrency(v ?? 1);
                       }}
                       aria-label="Concurrency"
+                      aria-describedby="concurrency-desc"
+                      disabled={maxConcurrency === 1}
                     />
-                    <span className="w-5 font-mono text-sm tabular-nums">{s.concurrency}</span>
+                    <span className="w-5 font-mono text-sm tabular-nums">
+                      {effectiveConcurrency}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-4">

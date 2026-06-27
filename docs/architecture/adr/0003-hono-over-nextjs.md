@@ -23,7 +23,7 @@ demo, in a pnpm monorepo. The API is deployed as a **long-lived server**
   framework. Hono is featherweight with strong types and clean middleware.
 - A long-lived server runs the asynchronous batch (jobId + poll) naturally.
   Serverless (Next or Hono on Vercel) caps function duration, which would force a
-  queue/cron or an SSE rework just to do background batch work — the constraint is
+  queue/cron or an SSE rework just to do background batch work, the constraint is
   the runtime, not the framework.
 - Two deploys instead of one; acceptable, and the brief deprioritizes infra polish.
 - A shared `@app/contracts` package keeps API/FE types in sync (DRY).

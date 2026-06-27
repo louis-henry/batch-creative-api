@@ -6,7 +6,7 @@ merge into protected `main`. `main` is always green and always deployable.
 ## Workflow
 
 1. Branch from `main`: `git checkout -b feat/<phase>`.
-2. Work in small, test-backed commits (see [git workflow](docs/governance/git-workflow.md)).
+2. Work in small, test-backed commits.
 3. Open a PR using the template. CI must pass.
 4. Squash merge. Delete the branch.
 

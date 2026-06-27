@@ -6,19 +6,11 @@ import prettier from 'eslint-config-prettier';
 /**
  * Flat config. Standards are machine-enforced here, not just documented:
  * cognitive/cyclomatic complexity, depth, and size caps keep code small and
- * readable. See docs/governance/engineering-standards.md for the rationale.
+ * readable.
  */
 export default tseslint.config(
   {
-    ignores: [
-      '**/dist/**',
-      '**/build/**',
-      '**/coverage/**',
-      'notes/**',
-      '**/*.cjs',
-      '**/*.d.ts',
-      '**/scripts/**',
-    ],
+    ignores: ['**/dist/**', '**/build/**', '**/coverage/**', 'notes/**', '**/*.cjs', '**/*.d.ts'],
   },
   js.configs.recommended,
   ...tseslint.configs.strict,
