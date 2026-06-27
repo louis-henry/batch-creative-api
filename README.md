@@ -157,6 +157,10 @@ social post per product. That's the graded surface, everything else serves it.
   [`docs/governance/security.md`](docs/governance/security.md).
 - The **judge gate** is wired but off by default (cost); enable via `JUDGE_THRESHOLD`.
 
+The deployed **How it was built** page carries a fuller _Scoped out_ roadmap (durability,
+observability, finished failover, auth, abuse controls), each cut paired with its
+production fix.
+
 The governance docs, ADRs, and tests are intentionally light scaffolding, cheap to
 maintain with the AI harness above, there to keep the small core honest, not to polish
 infra the brief deprioritises.
