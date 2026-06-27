@@ -2,9 +2,9 @@
 
 Turn **N product images + 1–2 reference images** into ready-to-post social posts,
 one styled, in-context product image per product paired with a generated
-**title, caption, and hashtags**, with the engineering that makes generative AI
-usable in production: **retries**, **multi-provider failover**, and a **consistent
-visual style** across the batch.
+**title, caption, and hashtags**, plus the reliability engineering around it:
+**retries**, **multi-provider failover**, and a **consistent visual style** across
+the batch.
 
 > Engineering take-home, Track 02 (Batch Creative API).
 
@@ -63,6 +63,10 @@ observable live in the UI. Visual consistency comes from a **style spec** (a
 shared descriptor and palette) read once from the references and sent with every
 product, plus the reference images on each image call; a stable seed adds
 reproducibility on providers that support it (Gemini).
+
+It deploys as a static web build on **Vercel** with the API on a long-lived host
+(**Railway**). The public `/batch` endpoint sits behind a basic spend guard
+(per-IP and global caps), so heavy use can temporarily pause new generations.
 
 ## Quickstart (local)
 
@@ -129,8 +133,8 @@ as a pair engineer, on an explicit harness rather than ad-hoc prompting:
 - **live docs via MCP**, context7 for current provider/API shapes, playwright for
   browser QA of the end-to-end flow.
 
-The breadth below was cheap _because_ of that harness, which is the skill the role
-hires for. More in [`docs/governance/ai-usage.md`](docs/governance/ai-usage.md).
+The breadth below was cheap _because_ of that harness. More in
+[`docs/governance/ai-usage.md`](docs/governance/ai-usage.md).
 
 ## Scoping & judgment
 
