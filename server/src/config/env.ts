@@ -13,6 +13,8 @@ const envSchema = z
     WEB_ORIGIN: z.string().url().optional(),
     // Enable the LLM quality gate: regenerate/fail over when a post scores below this (0..1).
     JUDGE_THRESHOLD: z.coerce.number().min(0).max(1).optional(),
+    // Per-request product cap; lower on the public deploy to bound spend.
+    MAX_PRODUCTS: z.coerce.number().int().positive().default(20),
   })
   .refine((e) => e.GEMINI_API_KEY !== undefined || e.OPENAI_API_KEY !== undefined, {
     // No path: this is a cross-field rule, so surface the instruction itself rather

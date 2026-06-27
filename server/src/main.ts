@@ -76,6 +76,13 @@ mkdirSync(OUTPUT_DIR, { recursive: true });
 const app = createApp({
   jobStore,
   startBatch,
+  maxProducts: env.MAX_PRODUCTS,
+  // Basic spend guard on the public, unauthenticated endpoint. The hard backstop
+  // is the provider-side spend caps; this just stops casual abuse from draining them.
+  rateLimits: {
+    perIp: { limit: 6, windowMs: 10 * 60_000 },
+    global: { limit: 40, windowMs: 60 * 60_000 },
+  },
   ...(env.WEB_ORIGIN !== undefined ? { corsOrigin: env.WEB_ORIGIN } : {}),
 });
 app.use(
