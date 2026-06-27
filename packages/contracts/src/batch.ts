@@ -27,7 +27,7 @@ export type JobStatus = z.infer<typeof jobStatusSchema>;
 
 /**
  * Partial-success result: successes and failures reported side by side. A given
- * item id lands in exactly one bucket — the refine enforces the buckets are
+ * item id lands in exactly one bucket; the refine enforces the buckets are
  * disjoint. (`pending`/`running` may carry partial results: the FE polls while
  * the batch is still running, so results accrue before `status` is `done`.)
  */

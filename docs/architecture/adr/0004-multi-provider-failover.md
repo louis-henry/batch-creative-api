@@ -11,7 +11,7 @@ Accepted
 The track requires "reliability and consistency at scale: retries, multi-provider
 failover." Generative-AI providers are flaky, rate-limited, and occasionally have
 vendor-wide outages. A single vendor (even with retries) does not survive a vendor
-outage — retrying the same failing vendor is not failover.
+outage, retrying the same failing vendor is not failover.
 
 ## Decision
 
@@ -31,5 +31,5 @@ fallback behind a single key.
   inside a gateway.
 - DRY/SRP: one tested unit handles all retry/failover; adapters stay thin.
 - Backoff and retryable-classification are pure functions → deterministic tests.
-- A `CHAOS` flag forces the primary to fail so failover is demonstrable end-to-end.
+- A per-request chaos toggle forces the primary to fail so failover is demonstrable end-to-end.
 - Cost stays low: the secondary fires only on real failure or the demo flag.

@@ -12,7 +12,7 @@ export interface RateGuard {
  * In-memory sliding-window counter. A basic spend guard for the public deploy:
  * it bounds how often the paid `/batch` endpoint can fire, both globally and per
  * client IP. State is process-local (resets on restart), which is enough at this
- * scale — the hard backstop is the provider-side spend caps, not this.
+ * scale; the hard backstop is the provider-side spend caps, not this.
  */
 export function createRateGuard(): RateGuard {
   const hits = new Map<string, number[]>();

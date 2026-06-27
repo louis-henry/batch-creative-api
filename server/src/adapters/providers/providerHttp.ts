@@ -41,7 +41,7 @@ export async function fetchText(
     const response = await fetchFn(url, init);
     return { status: response.status, text: await response.text() };
   } catch (cause) {
-    // An intentional cancellation is not a transient transport failure — let it
+    // An intentional cancellation is not a transient transport failure, so let it
     // propagate so it isn't retried. Reading the body is inside the try too, so
     // a stream error mid-drain is classified retryable like any transport fault.
     if (cause instanceof Error && cause.name === 'AbortError') throw cause;

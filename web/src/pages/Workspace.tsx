@@ -99,7 +99,7 @@ export function Workspace() {
       .then((f) => {
         add([f]);
       })
-      .catch(() => undefined);
+      .catch(() => toast.error('Could not load that sample image'));
   };
 
   let phase: 'idle' | 'running' | 'done' = 'idle';

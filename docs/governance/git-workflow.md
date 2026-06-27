@@ -11,7 +11,7 @@
 ## Commits
 
 - **Conventional Commits**, enforced by commitlint on `commit-msg`.
-  - `type(scope?): summary` — types: `feat fix docs test refactor chore ci build perf`.
+  - `type(scope?): summary`, types: `feat fix docs test refactor chore ci build perf`.
 - Imperative mood, summarize the **why** not the what:
   `feat: fail over to secondary image provider on retry exhaustion`.
 - One logical change per commit. Keep commits small and individually green.

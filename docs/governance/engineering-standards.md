@@ -5,9 +5,9 @@ These are enforced by ESLint/TypeScript where possible, and by review otherwise.
 ## Principles
 
 - **SOLID**, applied pragmatically. The two that shape this codebase most:
-  - **Single Responsibility** — each file/function does one thing. When a file
+  - **Single Responsibility**, each file/function does one thing. When a file
     grows past ~300 lines it is doing too much; split it.
-  - **Dependency Inversion** — `application` depends on **ports** (interfaces),
+  - **Dependency Inversion**, `application` depends on **ports** (interfaces),
     never on concrete vendor SDKs. Adapters implement the ports.
 - **DRY, but earned.** Extract on the third real duplication, not the first guess.
   A premature abstraction is worse than three honest copies.
@@ -25,7 +25,7 @@ These are enforced by ESLint/TypeScript where possible, and by review otherwise.
 | Nesting depth (`max-depth`)                           | 3     |
 | Parameters (`max-params`)                             | 4     |
 
-If you hit a limit, the design is telling you to decompose — extract a function,
+If you hit a limit, the design is telling you to decompose, extract a function,
 introduce a type, or invert a dependency. Don't raise the limit.
 
 ## TypeScript

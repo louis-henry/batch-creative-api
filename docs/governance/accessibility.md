@@ -14,7 +14,7 @@ The demo FE is small, but accessibility is a baseline, not a feature.
   with visible focus states. The upload area accepts keyboard + drag-drop.
 - **Status updates** (generating, failover, done, failed) are announced via an
   `aria-live` region so progress isn't visual-only.
-- **Color is not the only signal** — status uses icon + text, not just color.
+- **Color is not the only signal**, status uses icon + text, not just color.
   Contrast meets AA.
 - **Images** carry meaningful `alt` text; decorative images are marked as such.
 - **Motion**: animations are subtle and respect `prefers-reduced-motion`.

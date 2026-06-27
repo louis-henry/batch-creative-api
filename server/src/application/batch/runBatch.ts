@@ -52,7 +52,7 @@ async function runOne(
   }
 }
 
-/** Style is needed by every item — if it can't be read, the whole batch fails. */
+/** Style is needed by every item; if it can't be read, the whole batch fails. */
 async function resolveStyle(
   jobId: string,
   products: readonly ProductInput[],

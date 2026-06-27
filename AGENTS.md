@@ -1,6 +1,6 @@
-# AGENTS.md — operating guide for AI agents (and humans)
+# AGENTS.md, operating guide for AI agents (and humans)
 
-This file is the contract for anyone — human or AI — writing code in this repo.
+This file is the contract for anyone, human or AI, writing code in this repo.
 It is intentionally specific so an agent can act correctly without guessing.
 
 ## Golden rules
@@ -31,7 +31,7 @@ interface → wires it together  Hono HTTP layer (thin)
 
 - TypeScript strict; no `any` (use `unknown` + narrowing). Prefer `type` imports.
 - Small units: functions ≤ ~60 lines, files ≤ ~300, cyclomatic ≤ 10, cognitive ≤ 15.
-  These are **enforced by ESLint** — if the linter complains, split the unit.
+  These are **enforced by ESLint**, if the linter complains, split the unit.
 - Pure functions over stateful ones; inject dependencies, don't reach for globals.
 - Error handling at boundaries only (input, provider calls, I/O). Trust types within.
 - **Comments explain _why_, never _what_.** No line-by-line narration. JSDoc only on

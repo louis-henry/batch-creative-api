@@ -1,6 +1,6 @@
 # Performance
 
-The workload is I/O-bound (provider calls) and image-CPU-bound (compositing).
+The workload is I/O-bound: the batch is dominated by hosted provider calls.
 
 ## Concurrency
 
@@ -23,7 +23,7 @@ The workload is I/O-bound (provider calls) and image-CPU-bound (compositing).
 
 - Generation is the expensive operation. The style spec is extracted **once** per
   batch (not per image). Cheap/free-tier models are the default.
-- Failover only fires on real failure (or the `CHAOS` demo flag), so the secondary
+- Failover only fires on real failure (or the chaos demo toggle), so the secondary
   provider is rarely paid for.
 
 ## What we'd add for scale

@@ -10,7 +10,7 @@ Accepted
 
 The role spans backend/web and backend/ML. A natural assumption is "AI work ⇒
 Python." For this product, the "AI" is **orchestration of hosted provider APIs**
-(image generation, copy, judging) over HTTP — not model training or inference.
+(image generation, copy, judging) over HTTP, not model training or inference.
 
 ## Decision
 
