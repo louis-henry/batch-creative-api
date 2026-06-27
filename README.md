@@ -146,8 +146,11 @@ social post per product. That's the graded surface — everything else serves it
 
 - **No queue/workers/DB/auth** — in-memory job store + polling is enough at this scale;
   a real queue is the first production add.
-- **No global rate-limit / cross-batch cap** — per-request body and per-batch
-  concurrency are bounded; the rest is in [`docs/governance/security.md`](docs/governance/security.md).
+- **Basic spend guard, not full rate-limit infra** — the public deploy gets an
+  in-memory per-IP and global cap on the paid endpoint plus a per-request product
+  limit; no Redis-backed limiter or auth (it's public for assessors). The
+  provider-side spend caps are the hard backstop. See
+  [`docs/governance/security.md`](docs/governance/security.md).
 - The **judge gate** is wired but off by default (cost); enable via `JUDGE_THRESHOLD`.
 
 The governance docs, ADRs, and tests are intentionally light scaffolding — cheap to

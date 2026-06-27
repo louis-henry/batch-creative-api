@@ -78,6 +78,34 @@ describe('createApp POST /batch', () => {
     form.append('concurrency', 'abc');
     expect((await reject(form)).status).toBe(400);
   });
+
+  it('rate-limits the paid endpoint per IP when limits are configured', async () => {
+    const app = createApp({
+      jobStore: createInMemoryJobStore(),
+      startBatch: noop,
+      rateLimits: {
+        perIp: { limit: 2, windowMs: 60_000 },
+        global: { limit: 100, windowMs: 60_000 },
+      },
+    });
+    const valid = (): FormData => {
+      const f = new FormData();
+      f.append('products', pngFile('p.png'));
+      f.append('refs', pngFile('r.png'));
+      return f;
+    };
+    const send = (): Promise<Response> =>
+      Promise.resolve(
+        app.request('/batch', {
+          method: 'POST',
+          body: valid(),
+          headers: { 'x-forwarded-for': 'client-a' },
+        }),
+      );
+    expect((await send()).status).toBe(202);
+    expect((await send()).status).toBe(202);
+    expect((await send()).status).toBe(429);
+  });
 });
 
 describe('createApp GET /batch/:id', () => {

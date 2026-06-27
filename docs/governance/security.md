@@ -39,11 +39,14 @@ Scope-appropriate for a take-home, but with production instincts.
 Deliberately deferred for this take-home, with the production fix noted:
 
 - **Per-request body** is capped (`bodyLimit`) and uploads are validated for count,
-  MIME, and size before buffering. There is **no global cap on concurrent batches**
-  and **no auth/rate-limit** on the endpoint — production would add a request rate
-  limit, a process-wide in-flight-batch semaphore, and a shared key, plus TTL/size
-  eviction on the **job store (memory) and the `.output` image directory (disk)**,
-  to bound memory, disk, and provider spend.
+  MIME, and size before buffering. The public deploy adds a **basic in-memory spend
+  guard**: a per-IP and a global cap on `POST /batch` (rejecting with `429`) plus a
+  configurable per-request product limit (`MAX_PRODUCTS`). This is process-local and
+  best-effort, not Redis-backed; the hard backstop is the provider-side spend caps.
+  There is still **no auth** on the endpoint (it's public for assessors), and the
+  in-memory rate state and the `.output` image directory have **no TTL/size
+  eviction** — production would move the limiter and job state to a shared store and
+  add eviction.
 - **`GET /batch/:id`** has no per-caller ownership binding; job ids are unguessable
   (UUIDv4), so enumeration is impractical, but an auth model would bind job to caller.
 
