@@ -105,9 +105,12 @@ function rateLimited(
   // Per-IP first: a request an IP is already over its own limit on must not consume
   // a global slot, or one IP could exhaust the shared cap with rejected requests.
   if (!guard.allow(`ip:${ip}`, limits.perIp))
-    return c.json({ error: 'too many requests, please slow down and try again soon' }, 429);
+    return c.json(
+      { error: 'Demo limit reached. Please wait a few minutes before starting another batch.' },
+      429,
+    );
   if (!guard.allow('global', limits.global))
-    return c.json({ error: 'the demo is busy right now, please try again shortly' }, 429);
+    return c.json({ error: 'The demo is busy right now. Please try again in a few minutes.' }, 429);
   return undefined;
 }
 
