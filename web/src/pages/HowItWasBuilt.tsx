@@ -330,7 +330,7 @@ const SCOPED: [string, string][] = [
   ],
   [
     'Reliability',
-    'Failover is image-only; the text calls (style, copy, judge) run through a single OpenRouter key. Production: a second text provider in the same failover chain, plus per-provider circuit breakers.',
+    'Failover focuses on image generation, the most expensive and failure-prone call; the text calls (style, copy, judge) run through a single OpenRouter key, which still gives model-level fallback behind that key. The resilience executor is generic over providers, so adding a second text provider to the same chain is a small change. Production: that, plus per-provider circuit breakers.',
   ],
   [
     'Observability',
@@ -388,9 +388,9 @@ export function HowItWasBuilt() {
         <div className="mt-6 border-t border-border pt-5">
           <div className="flex flex-wrap gap-x-10 gap-y-3">
             {[
-              ['Total time', '~8 hrs'],
-              ['Hands-on', '~4 hrs'],
-              ['AI working', '~8 hrs'],
+              ['Total (wall-clock)', '~8 hrs'],
+              ['Hands-on (of that)', '~4 hrs'],
+              ['AI active', '~8 hrs'],
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="font-mono text-[10px] uppercase tracking-wider text-muted">{label}</p>
